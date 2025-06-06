@@ -1,0 +1,151 @@
+<script lang="ts">
+    import { onMount, untrack, getContext } from 'svelte';
+
+    // image urls, to be imported dynamically on mount
+    let vinylUrl: string = $state('');
+    let vinylCenterUrl: string = $state('');
+
+    // the rotation of the vinyl image
+    let rotation: number = $state(0);
+
+    // variables to hold to the image elements for rotation logic
+    let vinylElement: HTMLImageElement | null = $state(null); // Reference to the image element for rotation
+    let coverElement: HTMLImageElement | null = $state(null); // Reference to the cover image element
+
+    // animation frame ID for controlling the rotation on/off
+    let animationId: number | null = null;
+
+    // status of the vinyl player, can be 'spinning', 'stopped', or 'paused'
+    // coverUrl is the URL of the cover image of the track
+    let { status = 'stopped', coverUrl } = $props();
+
+    // defaulting to 60 if not provided
+    // the animation logic relys on the monitor refresh rate, so we need to standarize the FPS
+    const FPS: number = getContext('fps') || 60;
+    // last timestamp to control the frame rate
+    let lastTimestamp: DOMHighResTimeStamp | null = null;
+
+    // Getting the vite dynamic image URLs from the assets folder
+    onMount(async () => {
+        const moduleVinyl = await import('../assets/vinyl.png');
+        vinylUrl = moduleVinyl.default;
+
+        const moduleVinylCenter = await import('../assets/vinyl-center.png');
+        vinylCenterUrl = moduleVinylCenter.default;
+
+        if (coverUrl !== undefined) {
+            const module = await import(coverUrl);
+            coverUrl = module.default;
+        }
+    });
+
+    // effect to handle continuous rotation
+    // not my favorite way to handle this, but couldn't find a better way
+    // the animation is currently controlled by the `requestAnimationFrame` API
+    // which is one of the few ways I can do the animation and retain the rotation variable.
+    $effect(() => {
+        if (status === 'spinning') {
+            untrack(() => {
+                startRotation(null);
+            });
+        } else if (status === 'stopped') {
+            untrack(() => {
+                stopRotation();
+                resetRotation();
+            });
+        } else if (status === 'paused') {
+            untrack(() => {
+                stopRotation();
+            });
+        }
+    });
+
+    // will keep calling itself until we cancel the requestAnimationFrame
+    // speed is controlled internall and by the FPS variable, this should prolly be changed later
+    function startRotation(timestamp: DOMHighResTimeStamp | null) {
+        animationId = requestAnimationFrame(startRotation);
+
+        if (timestamp && lastTimestamp && timestamp - lastTimestamp < 1000 / FPS) {
+            return; // Skip this frame to maintain FPS
+        }
+
+        rotation += 0.1;
+        if (vinylElement) {
+            vinylElement.style.transform = `rotate(${rotation}deg)`;
+        }
+
+        if (coverElement) {
+            coverElement.style.transform = `rotate(${rotation}deg)`;
+        }
+
+        lastTimestamp = timestamp;
+    }
+
+    // cancels the rotation animation while retaining the current rotation state
+    function stopRotation() {
+        if (animationId) {
+            cancelAnimationFrame(animationId);
+            animationId = null;
+        }
+    }
+
+    // resets the rotation to 0 degrees
+    function resetRotation() {
+        if (vinylElement) {
+            vinylElement.style.transform = `rotate(0deg)`;
+        }
+
+        if (coverElement) {
+            coverElement.style.transform = `rotate(0deg)`;
+        }
+        rotation = 0;
+    }
+</script>
+
+<!-- Should've probably surrounded them with a div or something -->
+{#if vinylUrl}
+    <img
+        bind:this={vinylElement}
+        src={vinylUrl}
+        alt="Vinyl"
+        class="absolute top-[45px] left-[50px] h-[440px] w-auto"
+    />
+{/if}
+{#if coverUrl}
+    <img
+        bind:this={coverElement}
+        src={coverUrl}
+        alt="Cover"
+        class="absolute top-[180px] left-[185px] h-[170px] w-auto z-10 rounded-full object-cover"
+    />
+{/if}
+{#if vinylCenterUrl}
+    <img
+        src={vinylCenterUrl}
+        alt="Vinyl Center"
+        class="absolute top-[248px] left-[254px] h-[32px] w-auto z-20"
+    />
+{/if}
+
+<!-- Control buttons to be deleted -->
+<div class="controls">
+    <button
+        onmousedown={() => {
+            status = 'spinning';
+        }}>Continuous Spin</button
+    >
+    <button
+        onmousedown={() => {
+            status = 'stopped';
+        }}>stop Spin</button
+    >
+    <button
+        onmousedown={() => {
+            status = 'paused';
+        }}>puase Spin</button
+    >
+</div>
+
+<!-- if removed will cause imports to fail due to seemingly how the animation is done -->
+<style>
+</style>
