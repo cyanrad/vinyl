@@ -1,10 +1,6 @@
 <script lang="ts">
     import { onMount, untrack, getContext } from 'svelte';
 
-    // image urls, to be imported dynamically on mount
-    let vinylUrl: string = $state('');
-    let vinylCenterUrl: string = $state('');
-
     // the rotation of the vinyl image
     let rotation: number = $state(0);
 
@@ -19,20 +15,14 @@
     // coverUrl is the URL of the cover image of the track
     let { status = 'stopped', coverUrl } = $props();
 
-    // defaulting to 60 if not provided
+    // defaulting to 100 if not provided (much smoother than 60)
     // the animation logic relys on the monitor refresh rate, so we need to standarize the FPS
-    const FPS: number = getContext('fps') || 60;
+    const FPS: number = getContext('fps') || 100;
     // last timestamp to control the frame rate
     let lastTimestamp: DOMHighResTimeStamp | null = null;
 
     // Getting the vite dynamic image URLs from the assets folder
     onMount(async () => {
-        const moduleVinyl = await import('../assets/vinyl.png');
-        vinylUrl = moduleVinyl.default;
-
-        const moduleVinylCenter = await import('../assets/vinyl-center.png');
-        vinylCenterUrl = moduleVinylCenter.default;
-
         if (coverUrl !== undefined) {
             const module = await import(coverUrl);
             coverUrl = module.default;
@@ -62,6 +52,8 @@
 
     // will keep calling itself until we cancel the requestAnimationFrame
     // speed is controlled internall and by the FPS variable, this should prolly be changed later
+    // todo - the rotation of the disk is not computed when the browser is not open
+    //        considering that we have a framerate it can be possible to compute the rotation
     function startRotation(timestamp: DOMHighResTimeStamp | null) {
         animationId = requestAnimationFrame(startRotation);
 
@@ -103,29 +95,25 @@
 </script>
 
 <!-- Should've probably surrounded them with a div or something -->
-{#if vinylUrl}
-    <img
-        bind:this={vinylElement}
-        src={vinylUrl}
-        alt="Vinyl"
-        class="absolute top-[45px] left-[50px] h-[440px] w-auto"
-    />
-{/if}
+<img
+    bind:this={vinylElement}
+    src="/vinyl.png"
+    alt="Vinyl"
+    class="absolute top-[65px] left-[50px] h-[440px] w-auto"
+/>
 {#if coverUrl}
     <img
         bind:this={coverElement}
         src={coverUrl}
         alt="Cover"
-        class="absolute top-[180px] left-[185px] h-[170px] w-auto z-10 rounded-full object-cover"
+        class="absolute top-[200px] left-[185px] h-[170px] w-auto z-10 rounded-full object-cover"
     />
 {/if}
-{#if vinylCenterUrl}
-    <img
-        src={vinylCenterUrl}
-        alt="Vinyl Center"
-        class="absolute top-[248px] left-[254px] h-[32px] w-auto z-20"
-    />
-{/if}
+<img
+    src="/vinyl-center.png"
+    alt="Vinyl Center"
+    class="absolute top-[268px] left-[254px] h-[32px] w-auto z-20"
+/>
 
 <!-- Control buttons to be deleted -->
 <div class="controls">

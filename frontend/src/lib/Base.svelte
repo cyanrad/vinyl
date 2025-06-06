@@ -1,18 +1,8 @@
 <script>
-  import { onMount } from 'svelte';
-  import Vinyl from './Vinyl.svelte';
-
-  let baseUrl = '';
-
-  onMount(async () => {
-    const module = await import('../assets/base.png');
-    baseUrl = module.default;
-  });
+    import Vinyl from './Vinyl.svelte';
 </script>
 
 <div class="relative">
-  {#if baseUrl}
-    <img src={baseUrl} class="h-[620px] w-auto" />
-  {/if}
-  <Vinyl status="stopped" coverUrl="../assets/phantasmagoria.jpg" />
+    <img src="/base.png" alt="Base" class="h-[620px] w-auto" />
+    <Vinyl status="stopped" coverUrl="../assets/phantasmagoria.jpg" />
 </div>
