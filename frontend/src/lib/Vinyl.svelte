@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onMount, untrack, getContext } from 'svelte';
+    import PlayerState from './PlayerState';
 
     // the rotation of the vinyl image
     let rotation: number = $state(0);
@@ -11,9 +12,9 @@
     // animation frame ID for controlling the rotation on/off
     let animationId: number | null = null;
 
-    // status of the vinyl player, can be 'spinning', 'stopped', or 'paused'
+    // playerState of the vinyl player, can be 'spinning', 'stopped', or 'paused'
     // coverUrl is the URL of the cover image of the track
-    let { status = 'stopped', coverUrl } = $props();
+    let { playerState, coverUrl } = $props();
 
     // defaulting to 100 if not provided (much smoother than 60)
     // the animation logic relys on the monitor refresh rate, so we need to standarize the FPS
@@ -34,16 +35,16 @@
     // the animation is currently controlled by the `requestAnimationFrame` API
     // which is one of the few ways I can do the animation and retain the rotation variable.
     $effect(() => {
-        if (status === 'spinning') {
+        if (playerState === PlayerState.Playing) {
             untrack(() => {
                 startRotation(null);
             });
-        } else if (status === 'stopped') {
+        } else if (playerState === PlayerState.Stopped) {
             untrack(() => {
                 stopRotation();
                 resetRotation();
             });
-        } else if (status === 'paused') {
+        } else if (playerState === PlayerState.Paused) {
             untrack(() => {
                 stopRotation();
             });
@@ -116,23 +117,23 @@
 />
 
 <!-- Control buttons to be deleted -->
-<div class="controls">
-    <button
-        onmousedown={() => {
-            status = 'spinning';
-        }}>Continuous Spin</button
-    >
-    <button
-        onmousedown={() => {
-            status = 'stopped';
-        }}>stop Spin</button
-    >
-    <button
-        onmousedown={() => {
-            status = 'paused';
-        }}>puase Spin</button
-    >
-</div>
+<!-- <div class="controls"> -->
+<!--     <button -->
+<!--         onmousedown={() => { -->
+<!--             playerState = 'spinning'; -->
+<!--         }}>Continuous Spin</button -->
+<!--     > -->
+<!--     <button -->
+<!--         onmousedown={() => { -->
+<!--             playerState = 'stopped'; -->
+<!--         }}>stop Spin</button -->
+<!--     > -->
+<!--     <button -->
+<!--         onmousedown={() => { -->
+<!--             playerState = 'paused'; -->
+<!--         }}>puase Spin</button -->
+<!--     > -->
+<!-- </div> -->
 
 <!-- if removed will cause imports to fail due to seemingly how the animation is done -->
 <style>
