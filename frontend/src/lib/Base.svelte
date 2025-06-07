@@ -19,10 +19,22 @@
     let scrubberUpdated: boolean = $state(false);
 
     onMount(() => {
+        // play/pause events
         document.addEventListener('keydown', (event) => {
             if (event.code === 'Space' || event.code === 'KeyK') {
                 event.preventDefault(); // Prevent page scroll
                 playerState = playerState === PlayerState.Playing ? PlayerState.Paused : PlayerState.Playing;
+            }
+        });
+
+        // forward/rewind events
+        document.addEventListener('keydown', (event) => {
+            if (event.code === 'ArrowRight') {
+                currentTime += 5;
+                scrubberUpdated = true;
+            } else if (event.code === 'ArrowLeft') {
+                currentTime -= 5;
+                scrubberUpdated = true;
             }
         });
     });
