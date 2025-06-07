@@ -4,6 +4,13 @@
     import PlayerState from './PlayerState';
     import Scrubber from './Scrubber.svelte';
 
+    // base dimensions
+    const baseHeight = 620;
+    const controllerTop = 520;
+    const controllerLeft = 620;
+    const scrubberTop = 486;
+    const scrubberLeft = 564;
+
     // the overall state of the player coordinated with all components
     let playerState: PlayerState = $state(PlayerState.Paused);
 
@@ -49,14 +56,15 @@
     <img
         src="/base.svg"
         alt="Base"
-        class="h-[620px] w-auto select-none pointer-events-none"
+        class="w-auto select-none pointer-events-none"
+        style="height: {baseHeight}px;"
         draggable="false"
     />
     <Vinyl {playerState} coverUrl="../assets/phantasmagoria.jpg" />
-    <div class="absolute top-[520px] left-[620px]">
+    <div class="absolute" style="top: {controllerTop}px; left: {controllerLeft}px;">
         <Controller bind:playerState />
     </div>
-    <div class="absolute top-[486px] left-[564px]">
+    <div class="absolute" style="top: {scrubberTop}px; left: {scrubberLeft}px;">
         <Scrubber bind:currentTime bind:scrubberUpdated {duration} />
     </div>
 </div>

@@ -2,6 +2,21 @@
     import { onMount, untrack, getContext } from 'svelte';
     import PlayerState from './PlayerState';
 
+    // vinyl record dimensions and positioning
+    const vinylRecordTop = 65;
+    const vinylRecordLeft = 50;
+    const vinylRecordHeight = 440;
+
+    // album cover dimensions and positioning
+    const albumCoverTop = 200;
+    const albumCoverLeft = 185;
+    const albumCoverHeight = 170;
+
+    // vinyl center piece dimensions and positioning
+    const vinylCenterTop = 268;
+    const vinylCenterLeft = 254;
+    const vinylCenterHeight = 32;
+
     // the rotation of the vinyl image
     let rotation: number = $state(0);
 
@@ -96,22 +111,25 @@
     bind:this={vinylElement}
     src="/vinyl.png"
     alt="Vinyl"
-    class="absolute top-[65px] left-[50px] h-[440px] w-auto select-none pointer-events-none"
+    class="absolute w-auto select-none pointer-events-none"
+    style="top: {vinylRecordTop}px; left: {vinylRecordLeft}px; height: {vinylRecordHeight}px;"
 />
 {#if coverUrl}
     <img
         draggable="false"
         bind:this={coverElement}
         src={coverUrl}
-        alt="Cover"
-        class="absolute top-[200px] left-[185px] h-[170px] w-auto z-10 rounded-full object-cover select-none pointer-events-none"
+        alt=""
+        class="absolute w-auto z-10 rounded-full object-cover select-none pointer-events-none"
+        style="top: {albumCoverTop}px; left: {albumCoverLeft}px; height: {albumCoverHeight}px;"
     />
 {/if}
 <img
     draggable="false"
     src="/vinyl-center.png"
     alt="Vinyl Center"
-    class="absolute top-[268px] left-[254px] h-[32px] w-auto z-20 select-none pointer-events-none"
+    class="absolute w-auto z-20 select-none pointer-events-none"
+    style="top: {vinylCenterTop}px; left: {vinylCenterLeft}px; height: {vinylCenterHeight}px;"
 />
 
 <!-- if removed will cause imports to fail due to seemingly how the animation is done -->
