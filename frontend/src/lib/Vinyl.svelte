@@ -12,7 +12,7 @@
     // animation frame ID for controlling the rotation on/off
     let animationId: number | null = null;
 
-    // playerState of the vinyl player, can be 'spinning', 'stopped', or 'paused'
+    // playerState of the vinyl player, can be 'spinning' or 'paused'
     // coverUrl is the URL of the cover image of the track
     let { playerState, coverUrl } = $props();
 
@@ -38,11 +38,6 @@
         if (playerState === PlayerState.Playing) {
             untrack(() => {
                 startRotation(null);
-            });
-        } else if (playerState === PlayerState.Stopped) {
-            untrack(() => {
-                stopRotation();
-                resetRotation();
             });
         } else if (playerState === PlayerState.Paused) {
             untrack(() => {
@@ -97,43 +92,27 @@
 
 <!-- Should've probably surrounded them with a div or something -->
 <img
+    draggable="false"
     bind:this={vinylElement}
     src="/vinyl.png"
     alt="Vinyl"
-    class="absolute top-[65px] left-[50px] h-[440px] w-auto"
+    class="absolute top-[65px] left-[50px] h-[440px] w-auto select-none pointer-events-none"
 />
 {#if coverUrl}
     <img
+        draggable="false"
         bind:this={coverElement}
         src={coverUrl}
         alt="Cover"
-        class="absolute top-[200px] left-[185px] h-[170px] w-auto z-10 rounded-full object-cover"
+        class="absolute top-[200px] left-[185px] h-[170px] w-auto z-10 rounded-full object-cover select-none pointer-events-none"
     />
 {/if}
 <img
+    draggable="false"
     src="/vinyl-center.png"
     alt="Vinyl Center"
-    class="absolute top-[268px] left-[254px] h-[32px] w-auto z-20"
+    class="absolute top-[268px] left-[254px] h-[32px] w-auto z-20 select-none pointer-events-none"
 />
-
-<!-- Control buttons to be deleted -->
-<!-- <div class="controls"> -->
-<!--     <button -->
-<!--         onmousedown={() => { -->
-<!--             playerState = 'spinning'; -->
-<!--         }}>Continuous Spin</button -->
-<!--     > -->
-<!--     <button -->
-<!--         onmousedown={() => { -->
-<!--             playerState = 'stopped'; -->
-<!--         }}>stop Spin</button -->
-<!--     > -->
-<!--     <button -->
-<!--         onmousedown={() => { -->
-<!--             playerState = 'paused'; -->
-<!--         }}>puase Spin</button -->
-<!--     > -->
-<!-- </div> -->
 
 <!-- if removed will cause imports to fail due to seemingly how the animation is done -->
 <style>

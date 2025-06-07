@@ -1,2 +1,4 @@
-{}
+{
+    "plugins": ["prettier-plugin-svelte"]
+}
 
