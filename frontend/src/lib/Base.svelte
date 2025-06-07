@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { onMount } from 'svelte';
+
     import Vinyl from './Vinyl.svelte';
     import Controller from './Controller.svelte';
     import PlayerState from './PlayerState';
@@ -15,6 +17,15 @@
 
     // detect when a scrubber event happens
     let scrubberUpdated: boolean = $state(false);
+
+    onMount(() => {
+        document.addEventListener('keydown', (event) => {
+            if (event.code === 'Space' || event.code === 'KeyK') {
+                event.preventDefault(); // Prevent page scroll
+                playerState = playerState === PlayerState.Playing ? PlayerState.Paused : PlayerState.Playing;
+            }
+        });
+    });
 
     // handle audio playback based on player state
     $effect(() => {
