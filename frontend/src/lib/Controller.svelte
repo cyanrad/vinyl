@@ -2,13 +2,6 @@
     import PlayerState from './PlayerState';
     let { playerState = $bindable() } = $props();
 
-    // controller dimensions
-    const controllerWidth = 230;
-    const buttonSize = 30;
-    const forwardButtonWidth = 47;
-    const forwardButtonHeight = 30;
-    const marginRight = 1;
-    const marginLeft = 1;
 
     let playButtonInactiveSrc = $derived.by(() => {
         if (playerState === PlayerState.Paused) {
@@ -32,6 +25,12 @@
             playerState = PlayerState.Paused;
         }
     }
+
+    // controller dimensions
+    const controllerWidth = 230;
+    const buttonSize = 30;
+    const forwardButtonWidth = 47;
+    const forwardButtonHeight = 30;
 </script>
 
 <div class="flex flex-row items-center justify-between" style="width: {controllerWidth}px">

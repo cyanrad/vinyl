@@ -2,21 +2,6 @@
     import { onMount, untrack, getContext } from 'svelte';
     import PlayerState from './PlayerState';
 
-    // vinyl record dimensions and positioning
-    const vinylRecordTop = 65;
-    const vinylRecordLeft = 50;
-    const vinylRecordHeight = 440;
-
-    // album cover dimensions and positioning
-    const albumCoverTop = 200;
-    const albumCoverLeft = 185;
-    const albumCoverHeight = 170;
-
-    // vinyl center piece dimensions and positioning
-    const vinylCenterTop = 268;
-    const vinylCenterLeft = 254;
-    const vinylCenterHeight = 32;
-
     // the rotation of the vinyl image
     let rotation: number = $state(0);
 
@@ -103,6 +88,22 @@
         }
         rotation = 0;
     }
+
+    // vinyl record dimensions and positioning
+    const vinylRecordTop = 65;
+    const vinylRecordLeft = 50;
+    const vinylRecordHeight = 440;
+
+    // album cover dimensions and positioning
+    const albumCoverTop = 200;
+    const albumCoverLeft = 185;
+    const albumCoverHeight = 170;
+
+    // vinyl center piece dimensions and positioning
+    const vinylCenterTop = 268;
+    const vinylCenterLeft = 254;
+    const vinylCenterHeight = 32;
+
 </script>
 
 <!-- Should've probably surrounded them with a div or something -->

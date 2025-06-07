@@ -2,19 +2,19 @@
     // audio variables
     let { currentTime = $bindable(), scrubberUpdated = $bindable(), duration } = $props();
 
-    // size controls
-    const scrubberWidth = 330;
-    const scrubberHeight = 6;
-    const playheadSize = 16;
-    const playheadTopOffset = -5;
-    const playheadInnerSize = 12;
-    const playheadInnerOffset = 2;
-
-    // scrub & dragging logic logic
+    // scrub & dragging logic
     let isDragging = $state(false);
     let dragProgress = $state(0);
     let scrubberElement: HTMLButtonElement | null = $state(null);
-    let scrubProgress = $derived(isDragging ? dragProgress : (currentTime / duration) * 100);
+    let scrubProgress = $derived.by(() => {
+        if (isDragging) {
+            return dragProgress;
+        } else if (duration && currentTime) { // condition prevents full highlight if audio is not loaded
+            return (currentTime / duration) * 100;
+        } else {
+            return 0;
+        }
+    });
 
     // setting up event listeners and flags
     function handleMouseDown(event: MouseEvent) {
@@ -31,14 +31,6 @@
 
     function handleMouseMove(event: MouseEvent) {
         updateDragProgress(event);
-    }
-
-    function handleScrubberClick(event: MouseEvent) {
-        if (isDragging) return;
-
-        updateDragProgress(event);
-        currentTime = (dragProgress / 100) * duration;
-        scrubberUpdated = true;
     }
 
     function handleMouseUp(_: MouseEvent) {
@@ -63,6 +55,14 @@
         const progressPerc = (x / rect.width) * 100;
         dragProgress = Math.max(0, Math.min(100, progressPerc));
     }
+
+    // size controls
+    const scrubberWidth = 330;
+    const scrubberHeight = 6;
+    const playheadSize = 16;
+    const playheadTopOffset = -5;
+    const playheadInnerSize = 12;
+    const playheadInnerOffset = 2;
 </script>
 
 <div class="flex flex-col justify-center" style="width: {scrubberWidth}px">
@@ -71,7 +71,7 @@
         bind:this={scrubberElement}
         class="w-full rounded-full bg-zinc-900 relative cursor-pointer"
         style="height: {scrubberHeight}px"
-        onclick={handleScrubberClick}
+        onmousedown={handleMouseDown}
     >
         <!-- scrub bar highlight -->
         <div
@@ -89,7 +89,7 @@
             tabindex="0"
             aria-valuemin="0"
             aria-valuemax={duration}
-            aria-valuenow={isDragging ? (dragProgress / 100) * duration : currentTime}
+            aria-valuenow={currentTime}
         >
             <div
                 class="bg-zinc-900 rounded-full absolute pointer-events-none"

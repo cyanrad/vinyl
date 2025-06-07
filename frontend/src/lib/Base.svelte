@@ -4,12 +4,6 @@
     import PlayerState from './PlayerState';
     import Scrubber from './Scrubber.svelte';
 
-    // base dimensions
-    const baseHeight = 620;
-    const controllerTop = 520;
-    const controllerLeft = 620;
-    const scrubberTop = 486;
-    const scrubberLeft = 564;
 
     // the overall state of the player coordinated with all components
     let playerState: PlayerState = $state(PlayerState.Paused);
@@ -50,6 +44,13 @@
     audio.addEventListener('timeupdate', () => {
         currentTime = audio.currentTime;
     });
+
+    // base dimensions
+    const baseHeight = 620;
+    const controllerTop = 520;
+    const controllerLeft = 620;
+    const scrubberTop = 486;
+    const scrubberLeft = 564;
 </script>
 
 <div class="relative">
