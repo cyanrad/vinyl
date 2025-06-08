@@ -65,6 +65,8 @@
         // stop playback if we reach the end
         if (currentTime && duration && currentTime >= duration) {
             playerState = PlayerState.Paused;
+            currentTime = 0;
+            currTimeUpdated = true;
         }
     });
 
