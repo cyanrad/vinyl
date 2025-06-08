@@ -5,9 +5,12 @@
     // the rotation of the vinyl image
     let rotation: number = $state(0);
 
+    // browser hidden state, requestAnimationFrame doesn't get computed when the browser is hidden
+    let broswerHidden: boolean = $state(false);
+
     // variables to hold to the image elements for rotation logic
-    let vinylElement: HTMLImageElement | null = $state(null); // Reference to the image element for rotation
-    let coverElement: HTMLImageElement | null = $state(null); // Reference to the cover image element
+    let vinylElement: HTMLImageElement | null = $state(null);
+    let coverElement: HTMLImageElement | null = $state(null);
 
     // animation frame ID for controlling the rotation on/off
     let animationId: number | null = null;
@@ -90,6 +93,7 @@
         }
     }
 
+    // sets the rotation of the vinyl and the cover image
     function setRotation(rotation: number) {
         if (vinylElement) {
             vinylElement.style.transform = `rotate(${rotation}deg)`;
@@ -99,6 +103,17 @@
             coverElement.style.transform = `rotate(${rotation}deg)`;
         }
     }
+
+    // when the browser is hidden, the animation is paused and rotation does not change
+    // when the browser is visible again we want to resume the rotation based on current time
+    document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "hidden") {
+            broswerHidden = true;
+        } else if (document.visibilityState === "visible" && broswerHidden) {
+            setRotationToTime(currentTime);
+            broswerHidden = false;
+        }
+    });
 
     // vinyl record dimensions and positioning
     const vinylRecordTop = 65;

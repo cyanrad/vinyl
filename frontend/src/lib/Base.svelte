@@ -17,6 +17,7 @@
     // detect when a scrubber event happens
     let currTimeUpdated: boolean = $state(false);
 
+    // keyboard events
     onMount(() => {
         // play/pause events
         document.addEventListener("keydown", (event) => {
@@ -45,18 +46,22 @@
     $effect(() => {
         if (!audio) return;
 
+        // update current time if any change happened from scrubber/keyboard
         if (currTimeUpdated) {
             audio.currentTime = currentTime;
             currTimeUpdated = false; // reset the flag after updating
         }
 
+        // play/pause based on player state
         if (playerState === PlayerState.Playing) {
             audio.play();
         } else if (playerState === PlayerState.Paused) {
             audio.pause();
         }
+
+        // stop playback if we reach the end
         if (currentTime && duration && currentTime >= duration) {
-            playerState = PlayerState.Paused; // stop playback if we reach the end
+            playerState = PlayerState.Paused;
         }
     });
 
