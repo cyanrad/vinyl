@@ -1,6 +1,13 @@
 <script lang="ts">
     import PlayerState from "./PlayerState";
-    let { playerState = $bindable() } = $props();
+    import { getMovedAudioTime } from "./audio";
+
+    let {
+        playerState = $bindable(),
+        currentTime = $bindable(),
+        currTimeUpdated = $bindable(),
+        duration,
+    } = $props();
 
     let playButtonInactiveSrc = $derived.by(() => {
         if (playerState === PlayerState.Paused) {
@@ -61,6 +68,10 @@
     <button
         class="relative inline-block cursor-pointer mr-1"
         style="width: {forwardButtonWidth}px; height: {forwardButtonHeight}px"
+        onclick={() => {
+            currentTime = getMovedAudioTime(currentTime, duration, -5);
+            currTimeUpdated = true;
+        }}
     >
         <img
             draggable="false"
@@ -104,6 +115,10 @@
     <button
         class="relative inline-block cursor-pointer rotate-180 ml-1"
         style="width: {forwardButtonWidth}px; height: {forwardButtonHeight}px"
+        onclick={() => {
+            currentTime = getMovedAudioTime(currentTime, duration, 5);
+            currTimeUpdated = true;
+        }}
     >
         <img
             draggable="false"

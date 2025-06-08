@@ -6,6 +6,8 @@
     import PlayerState from "./PlayerState";
     import Scrubber from "./Scrubber.svelte";
 
+    import { getMovedAudioTime, getNewAudioTime } from "./audio";
+
     // the overall state of the player coordinated with all components
     let playerState: PlayerState = $state(PlayerState.Paused);
 
@@ -33,10 +35,10 @@
         // forward/rewind events
         document.addEventListener("keydown", (event) => {
             if (event.code === "ArrowRight") {
-                currentTime += 5;
+                currentTime = getMovedAudioTime(currentTime, duration, 5);
                 currTimeUpdated = true;
             } else if (event.code === "ArrowLeft") {
-                currentTime -= 5;
+                currentTime = getMovedAudioTime(currentTime, duration, -5);
                 currTimeUpdated = true;
             }
         });
@@ -48,6 +50,7 @@
 
         // update current time if any change happened from scrubber/keyboard
         if (currTimeUpdated) {
+            currentTime = getNewAudioTime(currentTime, duration, currentTime);
             audio.currentTime = currentTime;
             currTimeUpdated = false; // reset the flag after updating
         }
@@ -101,7 +104,12 @@
         class="absolute"
         style="top: {controllerTop}px; left: {controllerLeft}px;"
     >
-        <Controller bind:playerState />
+        <Controller
+            bind:playerState
+            bind:currentTime
+            bind:currTimeUpdated
+            {duration}
+        />
     </div>
     <div class="absolute" style="top: {scrubberTop}px; left: {scrubberLeft}px;">
         <Scrubber bind:currentTime bind:currTimeUpdated {duration} />
