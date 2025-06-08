@@ -1,40 +1,42 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
+    import { onMount } from "svelte";
 
-    import Vinyl from './Vinyl.svelte';
-    import Controller from './Controller.svelte';
-    import PlayerState from './PlayerState';
-    import Scrubber from './Scrubber.svelte';
-
+    import Vinyl from "./Vinyl.svelte";
+    import Controller from "./Controller.svelte";
+    import PlayerState from "./PlayerState";
+    import Scrubber from "./Scrubber.svelte";
 
     // the overall state of the player coordinated with all components
     let playerState: PlayerState = $state(PlayerState.Paused);
 
     // aduio variables
-    let audio: HTMLAudioElement = $state(new Audio('/music/avans-all_in.mp3'));
+    let audio: HTMLAudioElement = $state(new Audio("/music/avans-all_in.mp3"));
     let currentTime: number = $state(0);
     let duration: number = $state(0);
 
     // detect when a scrubber event happens
-    let scrubberUpdated: boolean = $state(false);
+    let currTimeUpdated: boolean = $state(false);
 
     onMount(() => {
         // play/pause events
-        document.addEventListener('keydown', (event) => {
-            if (event.code === 'Space' || event.code === 'KeyK') {
+        document.addEventListener("keydown", (event) => {
+            if (event.code === "Space" || event.code === "KeyK") {
                 event.preventDefault(); // Prevent page scroll
-                playerState = playerState === PlayerState.Playing ? PlayerState.Paused : PlayerState.Playing;
+                playerState =
+                    playerState === PlayerState.Playing
+                        ? PlayerState.Paused
+                        : PlayerState.Playing;
             }
         });
 
         // forward/rewind events
-        document.addEventListener('keydown', (event) => {
-            if (event.code === 'ArrowRight') {
+        document.addEventListener("keydown", (event) => {
+            if (event.code === "ArrowRight") {
                 currentTime += 5;
-                scrubberUpdated = true;
-            } else if (event.code === 'ArrowLeft') {
+                currTimeUpdated = true;
+            } else if (event.code === "ArrowLeft") {
                 currentTime -= 5;
-                scrubberUpdated = true;
+                currTimeUpdated = true;
             }
         });
     });
@@ -43,9 +45,9 @@
     $effect(() => {
         if (!audio) return;
 
-        if (scrubberUpdated) {
+        if (currTimeUpdated) {
             audio.currentTime = currentTime;
-            scrubberUpdated = false; // reset the flag after updating
+            currTimeUpdated = false; // reset the flag after updating
         }
 
         if (playerState === PlayerState.Playing) {
@@ -59,12 +61,12 @@
     });
 
     // load duration when metadata is ready
-    audio.addEventListener('loadedmetadata', () => {
+    audio.addEventListener("loadedmetadata", () => {
         duration = audio.duration;
     });
 
     // update current time as it plays
-    audio.addEventListener('timeupdate', () => {
+    audio.addEventListener("timeupdate", () => {
         currentTime = audio.currentTime;
     });
 
@@ -84,11 +86,19 @@
         style="height: {baseHeight}px;"
         draggable="false"
     />
-    <Vinyl {playerState} coverUrl="../assets/phantasmagoria.jpg" />
-    <div class="absolute" style="top: {controllerTop}px; left: {controllerLeft}px;">
+    <Vinyl
+        {playerState}
+        coverUrl="../assets/phantasmagoria.jpg"
+        {currentTime}
+        {currTimeUpdated}
+    />
+    <div
+        class="absolute"
+        style="top: {controllerTop}px; left: {controllerLeft}px;"
+    >
         <Controller bind:playerState />
     </div>
     <div class="absolute" style="top: {scrubberTop}px; left: {scrubberLeft}px;">
-        <Scrubber bind:currentTime bind:scrubberUpdated {duration} />
+        <Scrubber bind:currentTime bind:currTimeUpdated {duration} />
     </div>
 </div>

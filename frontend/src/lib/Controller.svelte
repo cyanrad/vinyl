@@ -1,20 +1,19 @@
 <script lang="ts">
-    import PlayerState from './PlayerState';
+    import PlayerState from "./PlayerState";
     let { playerState = $bindable() } = $props();
-
 
     let playButtonInactiveSrc = $derived.by(() => {
         if (playerState === PlayerState.Paused) {
-            return '/play-button-inactive.svg';
+            return "/play-button-inactive.svg";
         } else {
-            return '/pause-button-inactive.svg';
+            return "/pause-button-inactive.svg";
         }
     });
     let playButtonActiveSrc = $derived.by(() => {
         if (playerState === PlayerState.Paused) {
-            return '/play-button-active.svg';
+            return "/play-button-active.svg";
         } else {
-            return '/pause-button-active.svg';
+            return "/pause-button-active.svg";
         }
     });
 
@@ -33,9 +32,15 @@
     const forwardButtonHeight = 30;
 </script>
 
-<div class="flex flex-row items-center justify-between" style="width: {controllerWidth}px">
+<div
+    class="flex flex-row items-center justify-between"
+    style="width: {controllerWidth}px"
+>
     <!-- preivous track -->
-    <button class="relative inline-block cursor-pointer" style="width: {buttonSize}px">
+    <button
+        class="relative inline-block cursor-pointer"
+        style="width: {buttonSize}px"
+    >
         <img
             draggable="false"
             src="/next-inactive.svg"
@@ -53,7 +58,10 @@
     </button>
 
     <!-- rewind 5 s -->
-    <button class="relative inline-block cursor-pointer mr-1" style="width: {forwardButtonWidth}px; height: {forwardButtonHeight}px">
+    <button
+        class="relative inline-block cursor-pointer mr-1"
+        style="width: {forwardButtonWidth}px; height: {forwardButtonHeight}px"
+    >
         <img
             draggable="false"
             src="/forward-inactive.svg"
@@ -71,7 +79,11 @@
     </button>
 
     <!-- play/pause -->
-    <button class="relative inline-block cursor-pointer" style="width: {buttonSize}px" onclick={playPause}>
+    <button
+        class="relative inline-block cursor-pointer"
+        style="width: {buttonSize}px"
+        onclick={playPause}
+    >
         <img
             draggable="false"
             src={playButtonInactiveSrc}
@@ -89,7 +101,10 @@
     </button>
 
     <!-- forward 5 s -->
-    <button class="relative inline-block cursor-pointer rotate-180 ml-1" style="width: {forwardButtonWidth}px; height: {forwardButtonHeight}px">
+    <button
+        class="relative inline-block cursor-pointer rotate-180 ml-1"
+        style="width: {forwardButtonWidth}px; height: {forwardButtonHeight}px"
+    >
         <img
             draggable="false"
             src="/forward-inactive.svg"
@@ -107,7 +122,10 @@
     </button>
 
     <!-- next track -->
-    <button class="relative inline-block cursor-pointer" style="width: {buttonSize}px">
+    <button
+        class="relative inline-block cursor-pointer"
+        style="width: {buttonSize}px"
+    >
         <img
             draggable="false"
             src="/next-inactive.svg"

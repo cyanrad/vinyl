@@ -1,6 +1,6 @@
 <script lang="ts">
-    import { onMount, untrack, getContext } from 'svelte';
-    import PlayerState from './PlayerState';
+    import { onMount, untrack, getContext } from "svelte";
+    import PlayerState from "./PlayerState";
 
     // the rotation of the vinyl image
     let rotation: number = $state(0);
@@ -14,11 +14,12 @@
 
     // playerState of the vinyl player, can be 'spinning' or 'paused'
     // coverUrl is the URL of the cover image of the track
-    let { playerState, coverUrl } = $props();
+    let { playerState, coverUrl, currentTime, currTimeUpdated } = $props();
 
     // defaulting to 100 if not provided (much smoother than 60)
     // the animation logic relys on the monitor refresh rate, so we need to standarize the FPS
-    const FPS: number = getContext('fps') || 100;
+    const FPS: number = getContext("fps") || 100;
+    const ROTATION_SPEED: number = 1.645; // not sure why the FPS is not enough but this is to make it spin once every minute
     // last timestamp to control the frame rate
     let lastTimestamp: DOMHighResTimeStamp | null = null;
 
@@ -28,6 +29,8 @@
             const module = await import(coverUrl);
             coverUrl = module.default;
         }
+
+        setRotationToTime(currentTime);
     });
 
     // effect to handle continuous rotation
@@ -46,6 +49,18 @@
         }
     });
 
+    // update the rotation if the current time changes due to skips or scrubbing
+    $effect(() => {
+        if (currTimeUpdated) {
+            setRotationToTime(currentTime);
+        }
+    });
+
+    function setRotationToTime(time: number) {
+        rotation = time * (360 / 60);
+        setRotation(rotation);
+    }
+
     // will keep calling itself until we cancel the requestAnimationFrame
     // speed is controlled internall and by the FPS variable, this should prolly be changed later
     // todo - the rotation of the disk is not computed when the browser is not open
@@ -53,18 +68,16 @@
     function startRotation(timestamp: DOMHighResTimeStamp | null) {
         animationId = requestAnimationFrame(startRotation);
 
-        if (timestamp && lastTimestamp && timestamp - lastTimestamp < 1000 / FPS) {
+        if (
+            timestamp &&
+            lastTimestamp &&
+            timestamp - lastTimestamp < 1000 / FPS
+        ) {
             return; // Skip this frame to maintain FPS
         }
 
-        rotation += 0.1;
-        if (vinylElement) {
-            vinylElement.style.transform = `rotate(${rotation}deg)`;
-        }
-
-        if (coverElement) {
-            coverElement.style.transform = `rotate(${rotation}deg)`;
-        }
+        rotation += (360 / 60 / FPS) * ROTATION_SPEED; // one rotation per minute
+        setRotation(rotation);
 
         lastTimestamp = timestamp;
     }
@@ -77,16 +90,14 @@
         }
     }
 
-    // resets the rotation to 0 degrees
-    function resetRotation() {
+    function setRotation(rotation: number) {
         if (vinylElement) {
-            vinylElement.style.transform = `rotate(0deg)`;
+            vinylElement.style.transform = `rotate(${rotation}deg)`;
         }
 
         if (coverElement) {
-            coverElement.style.transform = `rotate(0deg)`;
+            coverElement.style.transform = `rotate(${rotation}deg)`;
         }
-        rotation = 0;
     }
 
     // vinyl record dimensions and positioning
@@ -103,7 +114,6 @@
     const vinylCenterTop = 268;
     const vinylCenterLeft = 254;
     const vinylCenterHeight = 32;
-
 </script>
 
 <!-- Should've probably surrounded them with a div or something -->
