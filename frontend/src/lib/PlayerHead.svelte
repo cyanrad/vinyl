@@ -2,38 +2,40 @@
     import { onMount, untrack, getContext } from "svelte";
     import PlayerState from "./PlayerState";
 
-    // the rotation of the vinyl image
-    let rotation: number = $state(0);
+    let { currentTime, currTimeUpdated, duration, playerState } = $props();
+    let playerArmElement: HTMLImageElement | null = $state(null);
+
+    const minPausedArmRotation = 0;
+    const minPlayingArmRotation = 7;
+    const maxPlayingArmRotation = 27;
+    const rotationPerSecond = $derived.by(() => {
+        if (duration) {
+            return (maxPlayingArmRotation - minPlayingArmRotation) / duration;
+        }
+        return 0;
+    });
+    let rotation: number = $state(minPausedArmRotation);
 
     // browser hidden state, requestAnimationFrame doesn't get computed when the browser is hidden
     let broswerHidden: boolean = $state(false);
 
-    // variables to hold to the image elements for rotation logic
-    let vinylElement: HTMLImageElement | null = $state(null);
-    let coverElement: HTMLImageElement | null = $state(null);
-
     // animation frame ID for controlling the rotation on/off
     let animationId: number | null = null;
-
-    // playerState of the vinyl player, can be 'spinning' or 'paused'
-    // coverUrl is the URL of the cover image of the track
-    let { playerState, coverUrl, currentTime, currTimeUpdated } = $props();
 
     // defaulting to 100 if not provided (much smoother than 60)
     // the animation logic relys on the monitor refresh rate, so we need to standarize the FPS
     const FPS: number = getContext("fps") || 100;
-    const ROTATION_SPEED: number = 1.645; // not sure why the FPS is not enough but this is to make it spin once every minute
+
     // last timestamp to control the frame rate
     let lastTimestamp: DOMHighResTimeStamp | null = null;
 
     // Getting the vite dynamic image URLs from the assets folder
     onMount(async () => {
-        if (coverUrl !== undefined) {
-            const module = await import(coverUrl);
-            coverUrl = module.default;
+        if (playerState === PlayerState.Playing) {
+            setRotationToTime(currentTime);
+        } else if (playerState === PlayerState.Paused) {
+            stopRotation();
         }
-
-        setRotationToTime(currentTime);
     });
 
     // effect to handle continuous rotation
@@ -43,9 +45,10 @@
     $effect(() => {
         if (playerState === PlayerState.Playing) {
             untrack(() => {
+                setRotationToTime(currentTime);
                 startRotation(null);
             });
-        } else if (playerState === PlayerState.Paused) {
+        } else if (playerState === PlayerState.Paused || currentTime === 0) {
             untrack(() => {
                 stopRotation();
             });
@@ -54,14 +57,14 @@
 
     // update the rotation if the current time changes due to skips or scrubbing
     $effect(() => {
-        if (currTimeUpdated) {
+        if (currTimeUpdated && playerState === PlayerState.Playing) {
             setRotationToTime(currentTime);
         }
     });
 
     function setRotationToTime(time: number) {
-        rotation = time * (360 / 60);
-        setRotation(rotation);
+        rotation = minPlayingArmRotation + time * rotationPerSecond;
+        setRotation();
     }
 
     // will keep calling itself until we cancel the requestAnimationFrame
@@ -77,29 +80,26 @@
             return; // Skip this frame to maintain FPS
         }
 
-        rotation += (360 / 60 / FPS) * ROTATION_SPEED; // one rotation per minute
-        setRotation(rotation);
+        rotation += rotationPerSecond / FPS;
+        setRotation();
 
         lastTimestamp = timestamp;
     }
 
     // cancels the rotation animation while retaining the current rotation state
     function stopRotation() {
-        if (animationId) {
-            cancelAnimationFrame(animationId);
-            animationId = null;
-        }
+        if (!animationId) return;
+
+        cancelAnimationFrame(animationId);
+        animationId = null;
+        rotation = minPausedArmRotation;
+        setRotation();
     }
 
     // sets the rotation of the vinyl and the cover image
-    function setRotation(rotation: number) {
-        if (vinylElement) {
-            vinylElement.style.transform = `rotate(${rotation}deg)`;
-        }
-
-        if (coverElement) {
-            coverElement.style.transform = `rotate(${rotation}deg)`;
-        }
+    function setRotation() {
+        if (!playerArmElement) return;
+        playerArmElement.style.transform = `rotate(${rotation}deg)`;
     }
 
     // when the browser is hidden, the animation is paused and rotation does not change
@@ -113,49 +113,52 @@
         }
     });
 
-    // vinyl record dimensions and positioning
-    const vinylRecordTop = 65;
-    const vinylRecordLeft = 50;
-    const vinylRecordHeight = 440;
+    const playerBaseHeight = 185;
 
-    // album cover dimensions and positioning
-    const albumCoverTop = 200;
-    const albumCoverLeft = 185;
-    const albumCoverHeight = 170;
+    const playerStandHeight = 60;
+    const playerStandTop = 58;
+    const playerStandLeft = 50;
 
-    // vinyl center piece dimensions and positioning
-    const vinylCenterTop = 268;
-    const vinylCenterLeft = 254;
-    const vinylCenterHeight = 32;
+    const playerArmHeight = 430;
+    const playerArmWidth = playerArmHeight * 0.553;
+    const playerArmTop = 10;
+    const playerArmLeft = -55;
+    const playerArmOriginLeft = 67;
+    const playerArmOriginTop = 20;
 </script>
 
-<!-- Should've probably surrounded them with a div or something -->
-<img
-    draggable="false"
-    bind:this={vinylElement}
-    src="/vinyl.png"
-    alt="Vinyl"
-    class="absolute w-auto select-none pointer-events-none"
-    style="top: {vinylRecordTop}px; left: {vinylRecordLeft}px; height: {vinylRecordHeight}px;"
-/>
-{#if coverUrl}
+<div class="relative">
+    <!-- Player Head Base -->
     <img
-        draggable="false"
-        bind:this={coverElement}
-        src={coverUrl}
+        src="/player-head-base.svg"
         alt=""
-        class="absolute w-auto z-10 rounded-full object-cover select-none pointer-events-none"
-        style="top: {albumCoverTop}px; left: {albumCoverLeft}px; height: {albumCoverHeight}px;"
+        class="w-auto select-none"
+        style="height: {playerBaseHeight}px;"
+        draggable="false"
     />
-{/if}
-<img
-    draggable="false"
-    src="/vinyl-center.png"
-    alt="Vinyl Center"
-    class="absolute w-auto z-20 select-none pointer-events-none"
-    style="top: {vinylCenterTop}px; left: {vinylCenterLeft}px; height: {vinylCenterHeight}px;"
-/>
 
-<!-- if removed will cause imports to fail due to seemingly how the animation is done -->
-<style>
-</style>
+    <!-- Player Arm -->
+    <!-- Stupid fucking thing refusing to work with height I have no clue why, had to surround it with a div-->
+    <div
+        class="absolute"
+        style="height: {playerArmHeight}px; top: {playerArmTop}px; left: {playerArmLeft}px; width: {playerArmWidth}px;"
+    >
+        <img
+            src="/player-head-arm.svg"
+            bind:this={playerArmElement}
+            alt=""
+            class="w-auto h-full absolute select-none"
+            style="transform-origin: {playerArmOriginLeft}% {playerArmOriginTop}%; transform: rotate({rotation}deg);"
+            draggable="false"
+        />
+    </div>
+
+    <!-- Player Head Stand -->
+    <img
+        src="/player-head-stand.svg"
+        alt=""
+        class="w-auto absolute select-none"
+        style="height: {playerStandHeight}px; top: {playerStandTop}px; left: {playerStandLeft}px;"
+        draggable="false"
+    />
+</div>

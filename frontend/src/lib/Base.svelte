@@ -3,9 +3,10 @@
 
     import Vinyl from "./Vinyl.svelte";
     import Controller from "./Controller.svelte";
-    import PlayerState from "./PlayerState";
     import Scrubber from "./Scrubber.svelte";
+    import PlayerHead from "./PlayerHead.svelte";
 
+    import PlayerState from "./PlayerState";
     import { getMovedAudioTime, getNewAudioTime } from "./audio";
 
     // the overall state of the player coordinated with all components
@@ -82,10 +83,18 @@
 
     // base dimensions
     const baseHeight = 620;
+
+    // controller dimensions
     const controllerTop = 520;
     const controllerLeft = 620;
+
+    // scrubber dimensions
     const scrubberTop = 486;
     const scrubberLeft = 564;
+
+    // player head dimensions
+    const playerHeadTop = 50;
+    const playerHeadLeft = 480;
 </script>
 
 <div class="relative">
@@ -96,6 +105,12 @@
         style="height: {baseHeight}px;"
         draggable="false"
     />
+    <div
+        class="absolute z-30"
+        style="top: {playerHeadTop}px; left: {playerHeadLeft}px;"
+    >
+        <PlayerHead {currentTime} {duration} {playerState} {currTimeUpdated} />
+    </div>
     <Vinyl
         {playerState}
         coverUrl="../assets/phantasmagoria.jpg"
@@ -113,7 +128,10 @@
             {duration}
         />
     </div>
-    <div class="absolute" style="top: {scrubberTop}px; left: {scrubberLeft}px;">
+    <div
+        class="absolute z-40"
+        style="top: {scrubberTop}px; left: {scrubberLeft}px;"
+    >
         <Scrubber bind:currentTime bind:currTimeUpdated {duration} />
     </div>
 </div>
