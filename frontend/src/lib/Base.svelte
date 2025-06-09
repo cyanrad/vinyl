@@ -5,6 +5,7 @@
     import Controller from "./Controller.svelte";
     import Scrubber from "./Scrubber.svelte";
     import PlayerHead from "./PlayerHead.svelte";
+    import AudioControl from "./AudioControl.svelte";
 
     import PlayerState from "./PlayerState";
     import { getMovedAudioTime, getNewAudioTime } from "./audio";
@@ -16,6 +17,7 @@
     let audio: HTMLAudioElement = $state(new Audio("/music/avans-all_in.mp3"));
     let currentTime: number = $state(0);
     let duration: number = $state(0);
+    let volume: number = $state(0.5);
 
     // detect when a scrubber event happens
     let currTimeUpdated: boolean = $state(false);
@@ -26,10 +28,7 @@
         document.addEventListener("keydown", (event) => {
             if (event.code === "Space" || event.code === "KeyK") {
                 event.preventDefault(); // Prevent page scroll
-                playerState =
-                    playerState === PlayerState.Playing
-                        ? PlayerState.Paused
-                        : PlayerState.Playing;
+                playerState = playerState === PlayerState.Playing ? PlayerState.Paused : PlayerState.Playing;
             }
         });
 
@@ -71,6 +70,11 @@
         }
     });
 
+    // handle volume change
+    $effect(() => {
+        audio.volume = volume;
+    });
+
     // load duration when metadata is ready
     audio.addEventListener("loadedmetadata", () => {
         duration = audio.duration;
@@ -95,9 +99,14 @@
     // player head dimensions
     const playerHeadTop = 50;
     const playerHeadLeft = 480;
+
+    // volume control dimensions
+    const volumeControlTop = 70;
+    const volumeControlLeft = 762;
 </script>
 
 <div class="relative">
+    <!-- base -->
     <img
         src="/base.svg"
         alt="Base"
@@ -105,33 +114,27 @@
         style="height: {baseHeight}px;"
         draggable="false"
     />
-    <div
-        class="absolute z-30"
-        style="top: {playerHeadTop}px; left: {playerHeadLeft}px;"
-    >
+
+    <!-- player head -->
+    <div class="absolute z-30" style="top: {playerHeadTop}px; left: {playerHeadLeft}px;">
         <PlayerHead {currentTime} {duration} {playerState} {currTimeUpdated} />
     </div>
-    <Vinyl
-        {playerState}
-        coverUrl="../assets/phantasmagoria.jpg"
-        {currentTime}
-        {currTimeUpdated}
-    />
-    <div
-        class="absolute"
-        style="top: {controllerTop}px; left: {controllerLeft}px;"
-    >
-        <Controller
-            bind:playerState
-            bind:currentTime
-            bind:currTimeUpdated
-            {duration}
-        />
+
+    <!-- vinyl -->
+    <Vinyl {playerState} coverUrl="../assets/avans-all-in.jpg" {currentTime} {currTimeUpdated} />
+
+    <!-- controller -->
+    <div class="absolute" style="top: {controllerTop}px; left: {controllerLeft}px;">
+        <Controller bind:playerState bind:currentTime bind:currTimeUpdated {duration} />
     </div>
-    <div
-        class="absolute z-40"
-        style="top: {scrubberTop}px; left: {scrubberLeft}px;"
-    >
+
+    <!-- scrubber -->
+    <div class="absolute z-40" style="top: {scrubberTop}px; left: {scrubberLeft}px;">
         <Scrubber bind:currentTime bind:currTimeUpdated {duration} />
+    </div>
+
+    <!-- volume control -->
+    <div class="absolute" style="top: {volumeControlTop}px; left: {volumeControlLeft}px;">
+        <AudioControl bind:volume />
     </div>
 </div>

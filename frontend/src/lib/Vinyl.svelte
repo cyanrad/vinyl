@@ -147,6 +147,12 @@
         class="absolute w-auto z-10 rounded-full object-cover select-none pointer-events-none"
         style="top: {albumCoverTop}px; left: {albumCoverLeft}px; height: {albumCoverHeight}px;"
     />
+    <div
+        class="absolute w-auto z-10 rounded-full object-cover select-none pointer-events-none opacity-30 bg-zinc-900"
+        style="top: {albumCoverTop - 1}px; left: {albumCoverLeft -
+            1}px; height: {albumCoverHeight + 1}px; width: {albumCoverHeight +
+            1}px;"
+    ></div>
 {/if}
 <img
     draggable="false"

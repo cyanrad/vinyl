@@ -25,6 +25,7 @@
     // defaulting to 100 if not provided (much smoother than 60)
     // the animation logic relys on the monitor refresh rate, so we need to standarize the FPS
     const FPS: number = getContext("fps") || 100;
+    const ROTATION_SPEED: number = 1.645; // not sure why the FPS is not enough but this is to make it spin once every minute
 
     // last timestamp to control the frame rate
     let lastTimestamp: DOMHighResTimeStamp | null = null;
@@ -63,7 +64,11 @@
     });
 
     function setRotationToTime(time: number) {
-        rotation = minPlayingArmRotation + time * rotationPerSecond;
+        if (playerState === PlayerState.Playing) {
+            rotation = minPlayingArmRotation + time * rotationPerSecond;
+        } else {
+            rotation = minPausedArmRotation;
+        }
         setRotation();
     }
 
@@ -80,7 +85,7 @@
             return; // Skip this frame to maintain FPS
         }
 
-        rotation += rotationPerSecond / FPS;
+        rotation += (rotationPerSecond / FPS) * ROTATION_SPEED;
         setRotation();
 
         lastTimestamp = timestamp;
