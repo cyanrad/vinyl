@@ -1,6 +1,6 @@
 <script lang="ts">
     import PlayerState from "./PlayerState";
-    import { getMovedAudioTime } from "./audio";
+    import { getMovedAudioTime } from "./Audio";
 
     let { playerState = $bindable(), currentTime = $bindable(), currTimeUpdated = $bindable(), duration } = $props();
 

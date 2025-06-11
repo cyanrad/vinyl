@@ -17,7 +17,7 @@
 
     // playerState of the vinyl player, can be 'spinning' or 'paused'
     // coverUrl is the URL of the cover image of the track
-    let { playerState, coverUrl, currentTime, currTimeUpdated } = $props();
+    let { playerState, trackCover, currentTime, currTimeUpdated } = $props();
 
     // defaulting to 100 if not provided (much smoother than 60)
     // the animation logic relys on the monitor refresh rate, so we need to standarize the FPS
@@ -28,11 +28,6 @@
 
     // Getting the vite dynamic image URLs from the assets folder
     onMount(async () => {
-        if (coverUrl !== undefined) {
-            const module = await import(coverUrl);
-            coverUrl = module.default;
-        }
-
         setRotationToTime(currentTime);
     });
 
@@ -138,11 +133,11 @@
     class="absolute w-auto select-none pointer-events-none"
     style="top: {vinylRecordTop}px; left: {vinylRecordLeft}px; height: {vinylRecordHeight}px;"
 />
-{#if coverUrl}
+{#if trackCover}
     <img
         draggable="false"
         bind:this={coverElement}
-        src={coverUrl}
+        src={trackCover}
         alt=""
         class="absolute w-auto z-10 rounded-full object-cover select-none pointer-events-none"
         style="top: {albumCoverTop}px; left: {albumCoverLeft}px; height: {albumCoverHeight}px;"

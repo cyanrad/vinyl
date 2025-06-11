@@ -1,7 +1,6 @@
 enum PlayerState {
-    Playing = 'playing',
-    Paused = 'paused',
-    Stopped = 'stopped',
+    Playing = "playing",
+    Paused = "paused",
 }
 
 export default PlayerState;

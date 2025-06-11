@@ -1,24 +1,35 @@
 <script lang="ts">
-    import { onMount } from "svelte";
+    import { onMount, getContext } from "svelte";
 
+    // components
     import Vinyl from "./Vinyl.svelte";
     import Controller from "./Controller.svelte";
     import Scrubber from "./Scrubber.svelte";
     import PlayerHead from "./PlayerHead.svelte";
     import AudioControl from "./AudioControl.svelte";
 
+    // state
     import PlayerState from "./PlayerState";
-    import { getMovedAudioTime, getNewAudioTime } from "./audio";
+    import { getMovedAudioTime, getNewAudioTime } from "./Audio";
+
+    // api
+    import { getAllTracks, generateTrackCoverUrl, generateTrackAudioUrl } from "./api/Tracks";
+    import type { Track } from "./api/Types";
+    import PocketBase from "pocketbase";
+
+    // API instance
+    const pb: PocketBase = getContext("pb");
+    let track: Track | null = $state(null);
 
     // media
-    const trackCover = "../assets/who-are-you.png";
-    const trackAudio = "../assets/music/who-are-you.mp3";
+    let trackCover: string | null = $derived(track ? generateTrackCoverUrl(track) : null);
+    let trackAudio: string | null = $derived(track ? generateTrackAudioUrl(track) : null);
 
     // the overall state of the player coordinated with all components
     let playerState: PlayerState = $state(PlayerState.Paused);
 
     // aduio variables
-    let audio: HTMLAudioElement | null = $state(null);
+    let audio: HTMLAudioElement | null = $derived(trackAudio ? new Audio(trackAudio) : null);
     let currentTime: number = $state(0);
     let duration: number = $state(0);
     let volume: number = $state(0.5);
@@ -27,7 +38,11 @@
     let currTimeUpdated: boolean = $state(false);
 
     // keyboard events
-    onMount(() => {
+    onMount(async () => {
+        // get the track from the api
+        const tracks = await getAllTracks(pb);
+        track = tracks[0];
+
         // play/pause events
         document.addEventListener("keydown", (event) => {
             if (event.code === "Space" || event.code === "KeyK") {
@@ -48,13 +63,10 @@
         });
     });
 
-    onMount(async () => {
-        // load the audio
-        const module = await import(trackAudio);
-        console.log(module.default);
-        audio = new Audio(module.default);
-
+    // attaching event listeners to the audio element
+    $effect(() => {
         if (!audio) return;
+        console.log("triggered");
 
         // load duration when metadata is ready
         audio.addEventListener("loadedmetadata", () => {
@@ -138,7 +150,7 @@
     </div>
 
     <!-- vinyl -->
-    <Vinyl {playerState} coverUrl={trackCover} {currentTime} {currTimeUpdated} />
+    <Vinyl {playerState} {trackCover} {currentTime} {currTimeUpdated} />
 
     <!-- controller -->
     <div class="absolute" style="top: {controllerTop}px; left: {controllerLeft}px;">
