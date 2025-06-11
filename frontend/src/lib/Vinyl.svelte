@@ -69,11 +69,7 @@
     function startRotation(timestamp: DOMHighResTimeStamp | null) {
         animationId = requestAnimationFrame(startRotation);
 
-        if (
-            timestamp &&
-            lastTimestamp &&
-            timestamp - lastTimestamp < 1000 / FPS
-        ) {
+        if (timestamp && lastTimestamp && timestamp - lastTimestamp < 1000 / FPS) {
             return; // Skip this frame to maintain FPS
         }
 
@@ -127,13 +123,17 @@
     const vinylCenterTop = 268;
     const vinylCenterLeft = 254;
     const vinylCenterHeight = 32;
+
+    // component images
+    const vinylDiskImage = "vinyl/disk.svg";
+    const vinylCenterImage = "vinyl/center.svg";
 </script>
 
 <!-- Should've probably surrounded them with a div or something -->
 <img
     draggable="false"
     bind:this={vinylElement}
-    src="/vinyl.png"
+    src={vinylDiskImage}
     alt="Vinyl"
     class="absolute w-auto select-none pointer-events-none"
     style="top: {vinylRecordTop}px; left: {vinylRecordLeft}px; height: {vinylRecordHeight}px;"
@@ -148,17 +148,16 @@
         style="top: {albumCoverTop}px; left: {albumCoverLeft}px; height: {albumCoverHeight}px;"
     />
     <div
-        class="absolute w-auto z-10 rounded-full object-cover select-none pointer-events-none opacity-30 bg-zinc-900"
-        style="top: {albumCoverTop - 1}px; left: {albumCoverLeft -
-            1}px; height: {albumCoverHeight + 1}px; width: {albumCoverHeight +
-            1}px;"
+        class="absolute w-auto z-20 rounded-full object-cover select-none pointer-events-none opacity-30 bg-zinc-900"
+        style="top: {albumCoverTop - 1}px; left: {albumCoverLeft - 1}px; height: {albumCoverHeight +
+            1}px; width: {albumCoverHeight + 1}px;"
     ></div>
 {/if}
 <img
     draggable="false"
-    src="/vinyl-center.png"
+    src={vinylCenterImage}
     alt="Vinyl Center"
-    class="absolute w-auto z-20 select-none pointer-events-none"
+    class="absolute w-auto z-10 select-none pointer-events-none"
     style="top: {vinylCenterTop}px; left: {vinylCenterLeft}px; height: {vinylCenterHeight}px;"
 />
 

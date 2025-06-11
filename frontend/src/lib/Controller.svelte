@@ -2,27 +2,7 @@
     import PlayerState from "./PlayerState";
     import { getMovedAudioTime } from "./audio";
 
-    let {
-        playerState = $bindable(),
-        currentTime = $bindable(),
-        currTimeUpdated = $bindable(),
-        duration,
-    } = $props();
-
-    let playButtonInactiveSrc = $derived.by(() => {
-        if (playerState === PlayerState.Paused) {
-            return "/play-button-inactive.svg";
-        } else {
-            return "/pause-button-inactive.svg";
-        }
-    });
-    let playButtonActiveSrc = $derived.by(() => {
-        if (playerState === PlayerState.Paused) {
-            return "/play-button-active.svg";
-        } else {
-            return "/pause-button-active.svg";
-        }
-    });
+    let { playerState = $bindable(), currentTime = $bindable(), currTimeUpdated = $bindable(), duration } = $props();
 
     function playPause() {
         if (playerState === PlayerState.Paused) {
@@ -37,27 +17,49 @@
     const buttonSize = 30;
     const forwardButtonWidth = 47;
     const forwardButtonHeight = 30;
+
+    // component images
+    const previousTrackActiveImage = "controller/next-active.svg";
+    const previousTrackInactiveImage = "controller/next-inactive.svg";
+    const forwardTrackActiveImage = "controller/forward-active.svg";
+    const forwardTrackInactiveImage = "controller/forward-inactive.svg";
+    const playTrackInactiveImage = "controller/play-button-inactive.svg";
+    const playTrackActiveImage = "controller/play-button-active.svg";
+    const pauseTrackInactiveImage = "controller/pause-button-inactive.svg";
+    const pauseTrackActiveImage = "controller/pause-button-active.svg";
+    const nextTrackActiveImage = "controller/next-active.svg";
+    const nextTrackInactiveImage = "controller/next-inactive.svg";
+
+    // dynamically chaning pause/play based on player state
+    let playButtonInactiveSrc = $derived.by(() => {
+        if (playerState === PlayerState.Paused) {
+            return playTrackInactiveImage;
+        } else {
+            return pauseTrackInactiveImage;
+        }
+    });
+    let playButtonActiveSrc = $derived.by(() => {
+        if (playerState === PlayerState.Paused) {
+            return playTrackActiveImage;
+        } else {
+            return pauseTrackActiveImage;
+        }
+    });
 </script>
 
-<div
-    class="flex flex-row items-center justify-between"
-    style="width: {controllerWidth}px"
->
+<div class="flex flex-row items-center justify-between" style="width: {controllerWidth}px">
     <!-- preivous track -->
-    <button
-        class="relative inline-block cursor-pointer"
-        style="width: {buttonSize}px"
-    >
+    <button class="relative inline-block cursor-pointer" style="width: {buttonSize}px">
         <img
             draggable="false"
-            src="/next-inactive.svg"
+            src={previousTrackInactiveImage}
             alt="play-button"
             class="w-auto transition-opacity duration-300 ease-in-out hover:opacity-0 select-none"
             style="height: {buttonSize}px;"
         />
         <img
             draggable="false"
-            src="/next-active.svg"
+            src={previousTrackActiveImage}
             alt="play-button-active"
             class="absolute top-0 left-0 w-auto opacity-0 transition-opacity duration-300 ease-in-out hover:opacity-100 select-none"
             style="height: {buttonSize}px;"
@@ -75,14 +77,14 @@
     >
         <img
             draggable="false"
-            src="/forward-inactive.svg"
+            src={forwardTrackInactiveImage}
             alt="play-button"
             class="w-auto transition-opacity duration-300 ease-in-out hover:opacity-0 mx-auto select-none"
             style="height: {buttonSize}px;"
         />
         <img
             draggable="false"
-            src="/forward-active.svg"
+            src={forwardTrackActiveImage}
             alt="play-button-active"
             class="absolute inset-0 m-auto w-auto opacity-0 transition-opacity duration-300 ease-in-out hover:opacity-100 select-none"
             style="height: {buttonSize}px;"
@@ -90,11 +92,7 @@
     </button>
 
     <!-- play/pause -->
-    <button
-        class="relative inline-block cursor-pointer"
-        style="width: {buttonSize}px"
-        onclick={playPause}
-    >
+    <button class="relative inline-block cursor-pointer" style="width: {buttonSize}px" onclick={playPause}>
         <img
             draggable="false"
             src={playButtonInactiveSrc}
@@ -122,14 +120,14 @@
     >
         <img
             draggable="false"
-            src="/forward-inactive.svg"
+            src={forwardTrackInactiveImage}
             alt="play-button"
             class="w-auto transition-opacity duration-300 ease-in-out hover:opacity-0 mx-auto select-none"
             style="height: {buttonSize}px;"
         />
         <img
             draggable="false"
-            src="/forward-active.svg"
+            src={forwardTrackActiveImage}
             alt="play-button-active"
             class="absolute inset-0 m-auto w-auto opacity-0 transition-opacity duration-300 ease-in-out hover:opacity-100 select-none"
             style="height: {buttonSize}px;"
@@ -137,20 +135,17 @@
     </button>
 
     <!-- next track -->
-    <button
-        class="relative inline-block cursor-pointer"
-        style="width: {buttonSize}px"
-    >
+    <button class="relative inline-block cursor-pointer" style="width: {buttonSize}px">
         <img
             draggable="false"
-            src="/next-inactive.svg"
+            src={nextTrackInactiveImage}
             alt="play-button"
             class="w-auto transition-opacity duration-300 ease-in-out hover:opacity-0 rotate-180 select-none"
             style="height: {buttonSize}px;"
         />
         <img
             draggable="false"
-            src="/next-active.svg"
+            src={nextTrackActiveImage}
             alt="play-button-active"
             class="absolute top-0 left-0 w-auto opacity-0 transition-opacity duration-300 ease-in-out hover:opacity-100 rotate-180 select-none"
             style="height: {buttonSize}px;"

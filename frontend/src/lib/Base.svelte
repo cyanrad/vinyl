@@ -10,11 +10,15 @@
     import PlayerState from "./PlayerState";
     import { getMovedAudioTime, getNewAudioTime } from "./audio";
 
+    // media
+    const trackCover = "../assets/who-are-you.png";
+    const trackAudio = "../assets/music/who-are-you.mp3";
+
     // the overall state of the player coordinated with all components
     let playerState: PlayerState = $state(PlayerState.Paused);
 
     // aduio variables
-    let audio: HTMLAudioElement = $state(new Audio("/music/avans-all_in.mp3"));
+    let audio: HTMLAudioElement | null = $state(null);
     let currentTime: number = $state(0);
     let duration: number = $state(0);
     let volume: number = $state(0.5);
@@ -41,6 +45,25 @@
                 currentTime = getMovedAudioTime(currentTime, duration, -5);
                 currTimeUpdated = true;
             }
+        });
+    });
+
+    onMount(async () => {
+        // load the audio
+        const module = await import(trackAudio);
+        console.log(module.default);
+        audio = new Audio(module.default);
+
+        if (!audio) return;
+
+        // load duration when metadata is ready
+        audio.addEventListener("loadedmetadata", () => {
+            duration = audio.duration;
+        });
+
+        // update current time as it plays
+        audio.addEventListener("timeupdate", () => {
+            currentTime = audio.currentTime;
         });
     });
 
@@ -72,17 +95,8 @@
 
     // handle volume change
     $effect(() => {
+        if (!audio) return;
         audio.volume = volume;
-    });
-
-    // load duration when metadata is ready
-    audio.addEventListener("loadedmetadata", () => {
-        duration = audio.duration;
-    });
-
-    // update current time as it plays
-    audio.addEventListener("timeupdate", () => {
-        currentTime = audio.currentTime;
     });
 
     // base dimensions
@@ -103,12 +117,15 @@
     // volume control dimensions
     const volumeControlTop = 70;
     const volumeControlLeft = 762;
+
+    // component images
+    const baseImage = "base/base.svg";
 </script>
 
 <div class="relative">
     <!-- base -->
     <img
-        src="/base.svg"
+        src={baseImage}
         alt="Base"
         class="w-auto select-none pointer-events-none"
         style="height: {baseHeight}px;"
@@ -121,7 +138,7 @@
     </div>
 
     <!-- vinyl -->
-    <Vinyl {playerState} coverUrl="../assets/avans-all-in.jpg" {currentTime} {currTimeUpdated} />
+    <Vinyl {playerState} coverUrl={trackCover} {currentTime} {currTimeUpdated} />
 
     <!-- controller -->
     <div class="absolute" style="top: {controllerTop}px; left: {controllerLeft}px;">

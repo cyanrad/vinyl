@@ -77,11 +77,7 @@
     function startRotation(timestamp: DOMHighResTimeStamp | null) {
         animationId = requestAnimationFrame(startRotation);
 
-        if (
-            timestamp &&
-            lastTimestamp &&
-            timestamp - lastTimestamp < 1000 / FPS
-        ) {
+        if (timestamp && lastTimestamp && timestamp - lastTimestamp < 1000 / FPS) {
             return; // Skip this frame to maintain FPS
         }
 
@@ -130,12 +126,17 @@
     const playerArmLeft = -55;
     const playerArmOriginLeft = 67;
     const playerArmOriginTop = 20;
+
+    // component images
+    const playerHeadBaseImage = "player-head/base.svg";
+    const playerHeadArmImage = "player-head/arm.svg";
+    const playerHeadStandImage = "player-head/stand.svg";
 </script>
 
 <div class="relative">
     <!-- Player Head Base -->
     <img
-        src="/player-head-base.svg"
+        src={playerHeadBaseImage}
         alt=""
         class="w-auto select-none"
         style="height: {playerBaseHeight}px;"
@@ -149,7 +150,7 @@
         style="height: {playerArmHeight}px; top: {playerArmTop}px; left: {playerArmLeft}px; width: {playerArmWidth}px;"
     >
         <img
-            src="/player-head-arm.svg"
+            src={playerHeadArmImage}
             bind:this={playerArmElement}
             alt=""
             class="w-auto h-full absolute select-none"
@@ -160,7 +161,7 @@
 
     <!-- Player Head Stand -->
     <img
-        src="/player-head-stand.svg"
+        src={playerHeadStandImage}
         alt=""
         class="w-auto absolute select-none"
         style="height: {playerStandHeight}px; top: {playerStandTop}px; left: {playerStandLeft}px;"
