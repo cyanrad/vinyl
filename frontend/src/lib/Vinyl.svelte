@@ -112,7 +112,7 @@
     // album cover dimensions and positioning
     const albumCoverTop = 200;
     const albumCoverLeft = 185;
-    const albumCoverHeight = 170;
+    const albumCoverLength = 170;
 
     // vinyl center piece dimensions and positioning
     const vinylCenterTop = 268;
@@ -140,12 +140,12 @@
         src={trackCover}
         alt=""
         class="absolute w-auto z-10 rounded-full object-cover select-none pointer-events-none"
-        style="top: {albumCoverTop}px; left: {albumCoverLeft}px; height: {albumCoverHeight}px;"
+        style="top: {albumCoverTop}px; left: {albumCoverLeft}px; height: {albumCoverLength}px; width: {albumCoverLength}px;"
     />
     <div
         class="absolute w-auto z-20 rounded-full object-cover select-none pointer-events-none opacity-30 bg-zinc-900"
-        style="top: {albumCoverTop - 1}px; left: {albumCoverLeft - 1}px; height: {albumCoverHeight +
-            1}px; width: {albumCoverHeight + 1}px;"
+        style="top: {albumCoverTop - 1}px; left: {albumCoverLeft - 1}px; height: {albumCoverLength +
+            1}px; width: {albumCoverLength + 1}px;"
     ></div>
 {/if}
 <img

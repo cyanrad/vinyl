@@ -22,7 +22,17 @@
     let track: Track | null = $state(null);
 
     // media
-    let trackCover: string | null = $derived(track ? generateTrackCoverUrl(track) : null);
+    let trackCover: string | null = $state(null);
+    $effect(() => {
+        if (track) {
+            generateTrackCoverUrl(pb, track).then((url) => {
+                trackCover = url;
+            });
+        } else {
+            trackCover = null;
+        }
+    });
+
     let trackAudio: string | null = $derived(track ? generateTrackAudioUrl(track) : null);
 
     // the overall state of the player coordinated with all components
