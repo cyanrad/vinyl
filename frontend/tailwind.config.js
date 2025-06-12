@@ -5,6 +5,7 @@ export default {
     extend: {
       fontFamily: {
         'quicksand': ['Quicksand', 'sans-serif'],
+        'perfect-dos-vga': ['PerfectDosVga', 'sans-serif'],
       },
     },
   },

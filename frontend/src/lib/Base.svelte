@@ -7,6 +7,7 @@
     import Scrubber from "./Scrubber.svelte";
     import PlayerHead from "./PlayerHead.svelte";
     import AudioControl from "./AudioControl.svelte";
+    import DisplayMonitor from "./DisplayMonitor.svelte";
 
     // state
     import PlayerState from "./PlayerState";
@@ -14,14 +15,17 @@
 
     // api
     import { getAllTracks, generateTrackCoverUrl, generateTrackAudioUrl } from "./api/Tracks";
-    import type { Track } from "./api/Types";
+    import { getArtistById, generateArtistImageUrl } from "./api/Artists";
+    import type { Track, Artist } from "./api/Types";
     import PocketBase from "pocketbase";
 
     // API instance
     const pb: PocketBase = getContext("pb");
     let track: Track | null = $state(null);
+    let artist: Artist | null = $state(null);
 
     // media
+    let artistImage: string | null = $state(null);
     let trackCover: string | null = $state(null);
     $effect(() => {
         if (track) {
@@ -53,6 +57,10 @@
         const tracks = await getAllTracks(pb);
         track = tracks[0];
 
+        // get the artist from the track
+        artist = await getArtistById(pb, track.artist);
+        artistImage = generateArtistImageUrl(artist);
+
         // play/pause events
         document.addEventListener("keydown", (event) => {
             if (event.code === "Space" || event.code === "KeyK") {
@@ -76,7 +84,6 @@
     // attaching event listeners to the audio element
     $effect(() => {
         if (!audio) return;
-        console.log("triggered");
 
         // load duration when metadata is ready
         audio.addEventListener("loadedmetadata", () => {
@@ -140,6 +147,10 @@
     const volumeControlTop = 70;
     const volumeControlLeft = 762;
 
+    // display screen dimensions
+    const displayScreenTop = 276;
+    const displayScreenLeft = 562;
+
     // component images
     const baseImage = "base/base.svg";
 </script>
@@ -153,6 +164,11 @@
         style="height: {baseHeight}px;"
         draggable="false"
     />
+
+    <!-- display screen -->
+    <div class="absolute z-40" style="top: {displayScreenTop}px; left: {displayScreenLeft}px; ">
+        <DisplayMonitor {artistImage} />
+    </div>
 
     <!-- player head -->
     <div class="absolute z-30" style="top: {playerHeadTop}px; left: {playerHeadLeft}px;">

@@ -5,7 +5,7 @@
     let { currentTime, currTimeUpdated, duration, playerState } = $props();
     let playerArmElement: HTMLImageElement | null = $state(null);
 
-    const minPausedArmRotation = 0;
+    const minPausedArmRotation = 2;
     const minPlayingArmRotation = 7;
     const maxPlayingArmRotation = 27;
     const rotationPerSecond = $derived.by(() => {
