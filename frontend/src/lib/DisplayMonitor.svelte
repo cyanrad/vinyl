@@ -1,12 +1,22 @@
 <script lang="ts">
     import { onMount } from "svelte";
 
-    let { artistImage } = $props();
+    import { generateAlbumCoverUrl } from "./api/Albums";
+    import { generateArtistImageUrl } from "./api/Artists";
+    import PlayerState from "./PlayerState";
 
-    let albumCover: string | null = $state(null);
+    let { playerState, track, artist, album } = $props();
 
-    let text = $state("All In");
-    let artist = $state("Avans");
+    // text
+    let trackTitle: string = $derived(track?.title || "");
+    let artistName: string = $derived(artist?.name || "");
+    let albumTitle: string = $derived(album?.title || "404\nNo Album\n:D");
+
+    let playerStateText: string = $derived(playerState === PlayerState.Playing ? "CURRENTLY PLAYING" : "PAUSED :[");
+
+    // images
+    let albumCover: string | null = $derived(album ? generateAlbumCoverUrl(album) : null);
+    let artistImage: string | null = $derived(artist ? generateArtistImageUrl(artist) : null);
 
     // flicker animation
     const flickerFPS = 24;
@@ -18,15 +28,17 @@
 
     // text sizes
     const textSize = $derived.by(() => {
-        if (text.length >= 90) {
+        if (!trackTitle) return "text-md";
+
+        if (trackTitle.length >= 90) {
             return "text-xs";
-        } else if (text.length > 70) {
+        } else if (trackTitle.length > 70) {
             return "text-sm";
-        } else if (text.length > 40) {
+        } else if (trackTitle.length > 40) {
             return "text-md";
-        } else if (text.length > 30) {
+        } else if (trackTitle.length > 30) {
             return "text-lg";
-        } else if (text.length > 20) {
+        } else if (trackTitle.length > 20) {
             return "text-xl";
         } else {
             return "text-3xl";
@@ -53,6 +65,7 @@
         return num;
     }
 
+    // random changing the opacity of the monitor to create a flickering effect
     onMount(() => {
         const interval = setInterval(() => {
             currentOpacity = randn_bm();
@@ -79,7 +92,7 @@
             class="crt-text text-emerald-200 text-lg h-[15%]"
             style="opacity: {currentOpacity + textFlickerModifier}; font-family: 'PerfectDosVga', sans-serif;"
         >
-            CURRENTLY PLAYING
+            {playerStateText}
         </span>
 
         <!-- Track Info -->
@@ -98,7 +111,7 @@
                     class="crt-text-bounce text-emerald-200 text-sm w-[80%]"
                     style="opacity: {currentOpacity + textFlickerModifier}; font-family: 'PerfectDosVga', sans-serif;"
                 >
-                    {artist}
+                    {artistName}
                 </span>
             </div>
 
@@ -107,7 +120,7 @@
                 class="crt-text text-emerald-200 w-[40%] {textSize}"
                 style="opacity: {currentOpacity + textFlickerModifier}; font-family: 'PerfectDosVga', sans-serif;"
             >
-                {text}
+                {trackTitle}
             </span>
 
             <!-- Album Cover & Name -->
@@ -120,23 +133,14 @@
                     />
 
                     <div class="h-2"></div>
-
-                    <span
-                        class="crt-text-bounce-delayed text-emerald-200 text-sm w-[80%] self-end"
-                        style="opacity: {currentOpacity +
-                            textFlickerModifier}; font-family: 'PerfectDosVga', sans-serif;"
-                    >
-                        {artist}
-                    </span>
-                {:else}
-                    <span
-                        class="crt-text-bounce-delayed text-emerald-200 text-md w-[80%] self-end"
-                        style="opacity: {currentOpacity +
-                            textFlickerModifier}; font-family: 'PerfectDosVga', sans-serif;"
-                    >
-                        404 <br /> No Album <br /> :D
-                    </span>
                 {/if}
+
+                <span
+                    class="crt-text-bounce-delayed text-emerald-200 text-sm w-[80%] self-end"
+                    style="opacity: {currentOpacity + textFlickerModifier}; font-family: 'PerfectDosVga', sans-serif;"
+                >
+                    {albumTitle}
+                </span>
             </div>
         </div>
     </div>

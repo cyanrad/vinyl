@@ -13,29 +13,18 @@
     import PlayerState from "./PlayerState";
     import { getMovedAudioTime, getNewAudioTime } from "./Audio";
 
-    // api
-    import { getAllTracks, generateTrackCoverUrl, generateTrackAudioUrl } from "./api/Tracks";
-    import { getArtistById, generateArtistImageUrl } from "./api/Artists";
-    import type { Track, Artist } from "./api/Types";
+    // API
+    import { getAllTracks, generateTrackAudioUrl } from "./api/Tracks";
+    import { getAlbumById } from "./api/Albums";
+    import { getArtistById } from "./api/Artists";
+    import type { Track, Artist, Album } from "./api/Types";
     import PocketBase from "pocketbase";
 
     // API instance
     const pb: PocketBase = getContext("pb");
     let track: Track | null = $state(null);
     let artist: Artist | null = $state(null);
-
-    // media
-    let artistImage: string | null = $state(null);
-    let trackCover: string | null = $state(null);
-    $effect(() => {
-        if (track) {
-            generateTrackCoverUrl(pb, track).then((url) => {
-                trackCover = url;
-            });
-        } else {
-            trackCover = null;
-        }
-    });
+    let album: Album | null = $state(null);
 
     let trackAudio: string | null = $derived(track ? generateTrackAudioUrl(track) : null);
 
@@ -48,18 +37,18 @@
     let duration: number = $state(0);
     let volume: number = $state(0.5);
 
-    // detect when a scrubber event happens
+    // flag for when a scrubber event happens
     let currTimeUpdated: boolean = $state(false);
 
     // keyboard events
     onMount(async () => {
-        // get the track from the api
+        // getting data from the API
         const tracks = await getAllTracks(pb);
         track = tracks[0];
-
-        // get the artist from the track
         artist = await getArtistById(pb, track.artist);
-        artistImage = generateArtistImageUrl(artist);
+        album = track.album ? await getAlbumById(pb, track.album) : null;
+
+        console.log(track, artist, album);
 
         // play/pause events
         document.addEventListener("keydown", (event) => {
@@ -167,7 +156,7 @@
 
     <!-- display screen -->
     <div class="absolute z-40" style="top: {displayScreenTop}px; left: {displayScreenLeft}px; ">
-        <DisplayMonitor {artistImage} />
+        <DisplayMonitor {playerState} {track} {artist} {album} />
     </div>
 
     <!-- player head -->
@@ -176,7 +165,7 @@
     </div>
 
     <!-- vinyl -->
-    <Vinyl {playerState} {trackCover} {currentTime} {currTimeUpdated} />
+    <Vinyl {playerState} {track} {album} {artist} {currentTime} {currTimeUpdated} />
 
     <!-- controller -->
     <div class="absolute" style="top: {controllerTop}px; left: {controllerLeft}px;">

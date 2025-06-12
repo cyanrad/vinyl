@@ -1,10 +1,12 @@
 <script lang="ts">
     import { onMount, untrack, getContext } from "svelte";
+
     import PlayerState from "./PlayerState";
 
     let { currentTime, currTimeUpdated, duration, playerState } = $props();
     let playerArmElement: HTMLImageElement | null = $state(null);
 
+    // rotation values
     const minPausedArmRotation = 2;
     const minPlayingArmRotation = 7;
     const maxPlayingArmRotation = 27;
@@ -63,6 +65,7 @@
         }
     });
 
+    // sets the rotation based on the current time of the audio
     function setRotationToTime(time: number) {
         if (playerState === PlayerState.Playing) {
             rotation = minPlayingArmRotation + time * rotationPerSecond;
@@ -114,12 +117,15 @@
         }
     });
 
+    // player base dimensions
     const playerBaseHeight = 185;
 
+    // player stand dimensions
     const playerStandHeight = 60;
     const playerStandTop = 58;
     const playerStandLeft = 50;
 
+    // player arm dimensions & rotation origin
     const playerArmHeight = 430;
     const playerArmWidth = playerArmHeight * 0.553;
     const playerArmTop = 10;

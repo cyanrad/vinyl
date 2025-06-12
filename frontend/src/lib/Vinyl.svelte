@@ -2,6 +2,14 @@
     import { onMount, untrack, getContext } from "svelte";
     import PlayerState from "./PlayerState";
 
+    // API
+    import { generateTrackCoverUrl } from "./api/Tracks";
+    import { generateAlbumCoverUrl } from "./api/Albums";
+    import { generateArtistImageUrl } from "./api/Artists";
+
+    // We need information about the general play state, audio timeing and track data
+    let { playerState, track, album, artist, currentTime, currTimeUpdated } = $props();
+
     // the rotation of the vinyl image
     let rotation: number = $state(0);
 
@@ -12,12 +20,21 @@
     let vinylElement: HTMLImageElement | null = $state(null);
     let coverElement: HTMLImageElement | null = $state(null);
 
+    // image of the vinyl cover
+    let coverImage: string | null = $derived.by(() => {
+        if (track && track.cover) {
+            return generateTrackCoverUrl(track);
+        } else if (album && album.cover) {
+            return generateAlbumCoverUrl(album);
+        } else if (artist && artist.image) {
+            return generateArtistImageUrl(artist);
+        } else {
+            return null;
+        }
+    });
+
     // animation frame ID for controlling the rotation on/off
     let animationId: number | null = null;
-
-    // playerState of the vinyl player, can be 'spinning' or 'paused'
-    // coverUrl is the URL of the cover image of the track
-    let { playerState, trackCover, currentTime, currTimeUpdated } = $props();
 
     // defaulting to 100 if not provided (much smoother than 60)
     // the animation logic relys on the monitor refresh rate, so we need to standarize the FPS
@@ -26,7 +43,7 @@
     // last timestamp to control the frame rate
     let lastTimestamp: DOMHighResTimeStamp | null = null;
 
-    // Getting the vite dynamic image URLs from the assets folder
+    // getting the vite dynamic image URLs from the assets folder
     onMount(async () => {
         setRotationToTime(currentTime);
     });
@@ -54,6 +71,7 @@
         }
     });
 
+    // sets the rotation of the vinyl and the cover image based on the current time of the audio
     function setRotationToTime(time: number) {
         rotation = time * (360 / 60);
         setRotation(rotation);
@@ -133,11 +151,11 @@
     class="absolute w-auto select-none pointer-events-none"
     style="top: {vinylRecordTop}px; left: {vinylRecordLeft}px; height: {vinylRecordHeight}px;"
 />
-{#if trackCover}
+{#if coverImage}
     <img
         draggable="false"
         bind:this={coverElement}
-        src={trackCover}
+        src={coverImage}
         alt=""
         class="absolute w-auto z-10 rounded-full object-cover select-none pointer-events-none"
         style="top: {albumCoverTop}px; left: {albumCoverLeft}px; height: {albumCoverLength}px; width: {albumCoverLength}px;"
