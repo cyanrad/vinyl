@@ -6,6 +6,7 @@
 
     // components
     import Base from "./lib/Base.svelte";
+    import SideBar from "./lib/SideBar.svelte";
 
     // api
     import { API_URL } from "./lib/api/consts";
@@ -16,8 +17,11 @@
     setContext("pb", new PocketBase(API_URL));
 </script>
 
-<main class="flex items-center justify-center h-screen w-screen fixed inset-0">
-    <Base />
+<main>
+    <SideBar />
+    <div class="flex items-center justify-center h-screen w-screen fixed inset-0">
+        <Base />
+    </div>
 </main>
 
 <style>
