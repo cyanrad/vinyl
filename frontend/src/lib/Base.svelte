@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onMount, getContext } from "svelte";
+    import { onMount } from "svelte";
 
     // components
     import Vinyl from "./Vinyl.svelte";
@@ -14,24 +14,17 @@
     import { getMovedAudioTime, getNewAudioTime } from "./Audio";
 
     // API
-    import { getAllTracks, generateTrackAudioUrl } from "./api/Tracks";
-    import { getAlbumById } from "./api/Albums";
-    import { getArtistById } from "./api/Artists";
-    import type { Track, Artist, Album } from "./api/Types";
-    import PocketBase from "pocketbase";
+    import { generateTrackAudioUrl } from "./api/Tracks";
 
-    // API instance
-    const pb: PocketBase = getContext("pb");
-    let track: Track | null = $state(null);
-    let artist: Artist | null = $state(null);
-    let album: Album | null = $state(null);
+    let { activeTrack, activeArtist, activeAlbum } = $props();
 
-    let trackAudio: string | null = $derived(track ? generateTrackAudioUrl(track) : null);
+    // get the track audio url
+    let trackAudio: string | null = $derived(activeTrack ? generateTrackAudioUrl(activeTrack) : null);
 
     // the overall state of the player coordinated with all components
     let playerState: PlayerState = $state(PlayerState.Paused);
 
-    // aduio variables
+    // audio variables
     let audio: HTMLAudioElement | null = $derived(trackAudio ? new Audio(trackAudio) : null);
     let currentTime: number = $state(0);
     let duration: number = $state(0);
@@ -42,16 +35,10 @@
 
     // keyboard events
     onMount(async () => {
-        // getting data from the API
-        const tracks = await getAllTracks(pb);
-        track = tracks[0];
-        artist = await getArtistById(pb, track.artist);
-        album = track.album ? await getAlbumById(pb, track.album) : null;
-
-        console.log(track, artist, album);
-
         // play/pause events
         document.addEventListener("keydown", (event) => {
+            if (!audio) return;
+
             if (event.code === "Space" || event.code === "KeyK") {
                 event.preventDefault(); // Prevent page scroll
                 playerState = playerState === PlayerState.Playing ? PlayerState.Paused : PlayerState.Playing;
@@ -60,6 +47,8 @@
 
         // forward/rewind events
         document.addEventListener("keydown", (event) => {
+            if (!audio) return;
+
             if (event.code === "ArrowRight") {
                 currentTime = getMovedAudioTime(currentTime, duration, 5);
                 currTimeUpdated = true;
@@ -156,7 +145,7 @@
 
     <!-- display screen -->
     <div class="absolute z-40" style="top: {displayScreenTop}px; left: {displayScreenLeft}px; ">
-        <DisplayMonitor {playerState} {track} {artist} {album} />
+        <DisplayMonitor {playerState} {activeTrack} {activeArtist} {activeAlbum} {audio} />
     </div>
 
     <!-- player head -->
@@ -165,11 +154,11 @@
     </div>
 
     <!-- vinyl -->
-    <Vinyl {playerState} {track} {album} {artist} {currentTime} {currTimeUpdated} />
+    <Vinyl {playerState} {activeTrack} {activeAlbum} {activeArtist} {currentTime} {currTimeUpdated} />
 
     <!-- controller -->
     <div class="absolute" style="top: {controllerTop}px; left: {controllerLeft}px;">
-        <Controller bind:playerState bind:currentTime bind:currTimeUpdated {duration} />
+        <Controller bind:playerState bind:currentTime bind:currTimeUpdated {duration} {audio} />
     </div>
 
     <!-- scrubber -->

@@ -2,10 +2,16 @@
     import PlayerState from "./PlayerState";
     import { getMovedAudioTime } from "./Audio";
 
-    let { playerState = $bindable(), currentTime = $bindable(), currTimeUpdated = $bindable(), duration } = $props();
+    let {
+        playerState = $bindable(),
+        currentTime = $bindable(),
+        currTimeUpdated = $bindable(),
+        duration,
+        audio,
+    } = $props();
 
     function playPause() {
-        if (playerState === PlayerState.Paused) {
+        if (playerState === PlayerState.Paused && audio) {
             playerState = PlayerState.Playing;
         } else {
             playerState = PlayerState.Paused;
@@ -32,14 +38,14 @@
 
     // dynamically chaning pause/play based on player state
     let playButtonInactiveSrc = $derived.by(() => {
-        if (playerState === PlayerState.Paused) {
+        if (playerState === PlayerState.Paused || !audio) {
             return playTrackInactiveImage;
         } else {
             return pauseTrackInactiveImage;
         }
     });
     let playButtonActiveSrc = $derived.by(() => {
-        if (playerState === PlayerState.Paused) {
+        if (playerState === PlayerState.Paused || !audio) {
             return playTrackActiveImage;
         } else {
             return pauseTrackActiveImage;
@@ -71,6 +77,8 @@
         class="relative inline-block cursor-pointer mr-1"
         style="width: {forwardButtonWidth}px; height: {forwardButtonHeight}px"
         onclick={() => {
+            if (!audio) return;
+
             currentTime = getMovedAudioTime(currentTime, duration, -5);
             currTimeUpdated = true;
         }}
@@ -114,6 +122,8 @@
         class="relative inline-block cursor-pointer rotate-180 ml-1"
         style="width: {forwardButtonWidth}px; height: {forwardButtonHeight}px"
         onclick={() => {
+            if (!audio) return;
+
             currentTime = getMovedAudioTime(currentTime, duration, 5);
             currTimeUpdated = true;
         }}

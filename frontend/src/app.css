@@ -7,6 +7,10 @@
 
 @import "tailwindcss";
 
+@theme {
+    --color-base: #2b2b32;
+}
+
 /* hide scrollbar taken from 
 https://www.reddit.com/r/tailwindcss/comments/1iqephx/comment/mf8ckai/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button */
 @layer utilities {

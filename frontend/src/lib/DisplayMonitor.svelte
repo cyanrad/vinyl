@@ -5,18 +5,21 @@
     import { generateArtistImageUrl } from "./api/Artists";
     import PlayerState from "./PlayerState";
 
-    let { playerState, track, artist, album } = $props();
+    let { playerState, activeTrack, activeArtist, activeAlbum, audio } = $props();
 
     // text
-    let trackTitle: string = $derived(track?.title || "");
-    let artistName: string = $derived(artist?.name || "");
-    let albumTitle: string = $derived(album?.title || "404\nNo Album\n:D");
+    let trackTitle: string = $derived(activeTrack?.title || "");
+    let artistName: string = $derived(activeArtist?.name || "");
+    let albumTitle: string = $derived(activeAlbum?.title || "404\nNo Album\n:D");
 
-    let playerStateText: string = $derived(playerState === PlayerState.Playing ? "CURRENTLY PLAYING" : "PAUSED :[");
+    let playerStateText: string = $derived.by(() => {
+        if (!audio) return "NO TRACK SELECTED :[";
+        return playerState === PlayerState.Playing ? "CURRENTLY PLAYING" : "PAUSED :O";
+    });
 
     // images
-    let albumCover: string | null = $derived(album ? generateAlbumCoverUrl(album) : null);
-    let artistImage: string | null = $derived(artist ? generateArtistImageUrl(artist) : null);
+    let albumCover: string | null = $derived(activeAlbum ? generateAlbumCoverUrl(activeAlbum) : null);
+    let artistImage: string | null = $derived(activeArtist ? generateArtistImageUrl(activeArtist) : null);
 
     // flicker animation
     const flickerFPS = 24;
@@ -95,54 +98,58 @@
             {playerStateText}
         </span>
 
-        <!-- Track Info -->
-        <div class="w-full h-full flex flex-row items-center p-2 text-center">
-            <!-- Artist Image & Name -->
-            <div class="w-[30%] h-full flex flex-col justify-center">
-                <img
-                    src={artistImage}
-                    alt=""
-                    class="w-[80%] aspect-square object-cover z-20 rounded-lg border-3 border-zinc-900 glitch-box animate-bounce"
-                />
-
-                <div class="h-2"></div>
-
-                <span
-                    class="crt-text-bounce text-emerald-200 text-sm w-[80%]"
-                    style="opacity: {currentOpacity + textFlickerModifier}; font-family: 'PerfectDosVga', sans-serif;"
-                >
-                    {artistName}
-                </span>
-            </div>
-
-            <!-- Track Name -->
-            <span
-                class="crt-text text-emerald-200 w-[40%] {textSize}"
-                style="opacity: {currentOpacity + textFlickerModifier}; font-family: 'PerfectDosVga', sans-serif;"
-            >
-                {trackTitle}
-            </span>
-
-            <!-- Album Cover & Name -->
-            <div class="w-[30%] h-full flex flex-col justify-center">
-                {#if albumCover}
+        {#if audio}
+            <!-- Track Info -->
+            <div class="w-full h-full flex flex-row items-center p-2 text-center">
+                <!-- Artist Image & Name -->
+                <div class="w-[30%] h-full flex flex-col justify-center">
                     <img
-                        src={albumCover}
+                        src={artistImage}
                         alt=""
-                        class="w-[80%] aspect-square object-cover z-20 rounded-lg border-3 border-zinc-900 glitch-box-delayed self-end"
+                        class="w-[80%] aspect-square object-cover z-20 rounded-lg border-3 border-zinc-900 glitch-box animate-bounce"
                     />
 
                     <div class="h-2"></div>
-                {/if}
 
+                    <span
+                        class="crt-text-bounce text-emerald-200 text-sm w-[80%]"
+                        style="opacity: {currentOpacity +
+                            textFlickerModifier}; font-family: 'PerfectDosVga', sans-serif;"
+                    >
+                        {artistName}
+                    </span>
+                </div>
+
+                <!-- Track Name -->
                 <span
-                    class="crt-text-bounce-delayed text-emerald-200 text-sm w-[80%] self-end"
+                    class="crt-text text-emerald-200 w-[40%] {textSize}"
                     style="opacity: {currentOpacity + textFlickerModifier}; font-family: 'PerfectDosVga', sans-serif;"
                 >
-                    {albumTitle}
+                    {trackTitle}
                 </span>
+
+                <!-- Album Cover & Name -->
+                <div class="w-[30%] h-full flex flex-col justify-center">
+                    {#if albumCover}
+                        <img
+                            src={albumCover}
+                            alt=""
+                            class="w-[80%] aspect-square object-cover z-20 rounded-lg border-3 border-zinc-900 glitch-box-delayed self-end"
+                        />
+
+                        <div class="h-2"></div>
+                    {/if}
+
+                    <span
+                        class="crt-text-bounce-delayed text-emerald-200 text-sm w-[80%] self-end"
+                        style="opacity: {currentOpacity +
+                            textFlickerModifier}; font-family: 'PerfectDosVga', sans-serif;"
+                    >
+                        {albumTitle}
+                    </span>
+                </div>
             </div>
-        </div>
+        {/if}
     </div>
 </div>
 

@@ -1,6 +1,4 @@
 <script lang="ts">
-    import { onMount } from "svelte";
-
     // audio variables
     let { volume = $bindable() } = $props();
 

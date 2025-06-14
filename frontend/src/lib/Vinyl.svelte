@@ -8,7 +8,7 @@
     import { generateArtistImageUrl } from "./api/Artists";
 
     // We need information about the general play state, audio timeing and track data
-    let { playerState, track, album, artist, currentTime, currTimeUpdated } = $props();
+    let { playerState, activeTrack, activeAlbum, activeArtist, currentTime, currTimeUpdated } = $props();
 
     // the rotation of the vinyl image
     let rotation: number = $state(0);
@@ -22,12 +22,12 @@
 
     // image of the vinyl cover
     let coverImage: string | null = $derived.by(() => {
-        if (track && track.cover) {
-            return generateTrackCoverUrl(track);
-        } else if (album && album.cover) {
-            return generateAlbumCoverUrl(album);
-        } else if (artist && artist.image) {
-            return generateArtistImageUrl(artist);
+        if (activeTrack && activeTrack.cover) {
+            return generateTrackCoverUrl(activeTrack);
+        } else if (activeAlbum && activeAlbum.cover) {
+            return generateAlbumCoverUrl(activeAlbum);
+        } else if (activeArtist && activeArtist.image) {
+            return generateArtistImageUrl(activeArtist);
         } else {
             return null;
         }

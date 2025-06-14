@@ -1,4 +1,8 @@
 <script lang="ts">
+    import type { Track, Artist, Album } from "./api/Types";
+
+    let { track } = $props();
+
     // diamentions
     const trackItemHeight = 60;
     const trackItemShadowLeft = 6;
@@ -16,5 +20,7 @@
     <div
         class="absolute flex top-0 left-0 bg-zinc-900 rounded-2xl w-full border-3 border-emerald-800 group-hover:border-emerald-400 transition-all duration-75"
         style="height: {trackItemHeight}px"
-    ></div>
+    >
+        {track.title}
+    </div>
 </button>
