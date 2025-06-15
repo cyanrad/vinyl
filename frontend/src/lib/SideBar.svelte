@@ -3,12 +3,16 @@
 
     import TrackItem from "./TrackItem.svelte";
 
-    let { tracks, activeTrack = $bindable(), activeArtist = $bindable(), activeAlbum = $bindable() } = $props();
+    let { tracks, activeTrackIndex = $bindable() } = $props();
 
     let isSideBarOpen = $state(false);
+    let resetKey = $state(0);
 
     function toggleSideBar() {
         isSideBarOpen = !isSideBarOpen;
+        if (isSideBarOpen) {
+            resetKey++;
+        }
     }
 
     const playlistBarWidth = 60;
@@ -44,13 +48,16 @@
 
                 <!-- inner bar -->
                 <div class="absolute top-[0.8%] h-[97%] bg-base rounded-r-xl pt-2" style="width: {innerInfoBarWidth}px">
-                    <div
-                        class="flex flex-col gap-20 h-[calc(100%-10px)] overflow-y-auto p-4 rounded-4xl scroll-smooth scrollbar-none"
-                    >
-                        {#each tracks as track}
-                            <TrackItem {track} />
-                        {/each}
-                    </div>
+                    <!-- forcing the component to re-render to rerun the animation  -->
+                    {#key resetKey}
+                        <div
+                            class="flex flex-col gap-20 h-[calc(100%-10px)] overflow-y-auto p-4 rounded-4xl scroll-smooth scrollbar-none"
+                        >
+                            {#each tracks as track, index}
+                                <TrackItem {track} {index} bind:activeTrackIndex />
+                            {/each}
+                        </div>
+                    {/key}
                 </div>
             </div>
         {/if}

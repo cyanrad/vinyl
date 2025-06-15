@@ -85,8 +85,7 @@
 <div class="relative" style="width: {crtWidth}px; height: {crtHeight}px;">
     <!-- CRT effect -->
     <div class="z-10 absolute w-full h-full crt bg-emerald-900 rounded-lg" style="opacity: {currentOpacity};"></div>
-    <div class="z-10 absolute w-full h-full crt bg-zinc-800 rounded-lg opacity-30"></div>
-    <div class="z-30 absolute w-full h-full crt bg-zinc-800 rounded-lg opacity-10"></div>
+    <div class="z-30 absolute w-full h-full crt bg-zinc-800 rounded-lg opacity-40"></div>
 
     <!-- Monitor Media -->
     <div class="absolute w-full h-full flex flex-col p-2 text-center">

@@ -13,7 +13,7 @@ function generateTrackCoverUrl(track: Track): string | null {
     return track.cover ? generateFileUrl(TRACKS_COLLECTION, track.id, track.cover) : null;
 }
 
-function generateTrackAudioUrl(track: Track): string | null {
+function generateTrackAudioUrl(track: Track): string {
     return generateFileUrl(TRACKS_COLLECTION, track.id, track.audio);
 }
 

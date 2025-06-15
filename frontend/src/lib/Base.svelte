@@ -13,19 +13,12 @@
     import PlayerState from "./PlayerState";
     import { getMovedAudioTime, getNewAudioTime } from "./Audio";
 
-    // API
-    import { generateTrackAudioUrl } from "./api/Tracks";
-
-    let { activeTrack, activeArtist, activeAlbum } = $props();
-
-    // get the track audio url
-    let trackAudio: string | null = $derived(activeTrack ? generateTrackAudioUrl(activeTrack) : null);
+    let { activeTrack, activeArtist, activeAlbum, audio = $bindable() } = $props();
 
     // the overall state of the player coordinated with all components
     let playerState: PlayerState = $state(PlayerState.Paused);
 
     // audio variables
-    let audio: HTMLAudioElement | null = $derived(trackAudio ? new Audio(trackAudio) : null);
     let currentTime: number = $state(0);
     let duration: number = $state(0);
     let volume: number = $state(0.5);
