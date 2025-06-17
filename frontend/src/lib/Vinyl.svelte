@@ -3,12 +3,14 @@
     import PlayerState from "./PlayerState";
 
     // API
-    import { generateTrackCoverUrl } from "./api/Tracks";
-    import { generateAlbumCoverUrl } from "./api/Albums";
-    import { generateArtistImageUrl } from "./api/Artists";
+    import {
+        generateTrackItemCoverUrl,
+        generateTrackItemAlbumCoverUrl,
+        generateTrackItemArtistImageUrl,
+    } from "./api/TrackItems";
 
     // We need information about the general play state, audio timeing and track data
-    let { playerState, activeTrack, activeAlbum, activeArtist, currentTime, currTimeUpdated } = $props();
+    let { playerState, activeTrack, currentTime, currTimeUpdated } = $props();
 
     // the rotation of the vinyl image
     let rotation: number = $state(0);
@@ -23,11 +25,11 @@
     // image of the vinyl cover
     let coverImage: string | null = $derived.by(() => {
         if (activeTrack && activeTrack.cover) {
-            return generateTrackCoverUrl(activeTrack);
-        } else if (activeAlbum && activeAlbum.cover) {
-            return generateAlbumCoverUrl(activeAlbum);
-        } else if (activeArtist && activeArtist.image) {
-            return generateArtistImageUrl(activeArtist);
+            return generateTrackItemCoverUrl(activeTrack);
+        } else if (activeTrack && activeTrack.albumCover) {
+            return generateTrackItemAlbumCoverUrl(activeTrack);
+        } else if (activeTrack && activeTrack.artistImages[0]) {
+            return generateTrackItemArtistImageUrl(activeTrack, 0);
         } else {
             return null;
         }
@@ -161,7 +163,7 @@
         style="top: {albumCoverTop}px; left: {albumCoverLeft}px; height: {albumCoverLength}px; width: {albumCoverLength}px;"
     />
     <div
-        class="absolute w-auto z-20 rounded-full object-cover select-none pointer-events-none opacity-30 bg-zinc-900"
+        class="absolute w-auto z-20 rounded-full object-cover select-none pointer-events-none opacity-15 bg-zinc-900"
         style="top: {albumCoverTop - 1}px; left: {albumCoverLeft - 1}px; height: {albumCoverLength +
             1}px; width: {albumCoverLength + 1}px;"
     ></div>

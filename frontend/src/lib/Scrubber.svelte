@@ -1,10 +1,6 @@
 <script lang="ts">
     // audio variables
-    let {
-        currentTime = $bindable(),
-        currTimeUpdated = $bindable(),
-        duration,
-    } = $props();
+    let { currentTime = $bindable(), currTimeUpdated = $bindable(), duration } = $props();
 
     // scrub & dragging logic
     let isDragging = $state(false);
@@ -72,7 +68,9 @@
         dragProgress = Math.max(0, Math.min(1, progressPerc));
     }
 
-    function convertToMMSS(time: number) {
+    function convertToMMSS(time: number | null) {
+        if (!time) return "0:00";
+
         const minutes = Math.floor(time / 60);
         const seconds = Math.floor(time % 60);
         return `${minutes}:${seconds.toString().padStart(2, "0")}`;
@@ -98,8 +96,7 @@
         <!-- scrub bar highlight -->
         <div
             class="top-0 left-0 bg-emerald-400 rounded-full pointer-events-none"
-            style="width: {scrubProgress * 100 +
-                2}%; height: {scrubberHeight}px"
+            style="width: {scrubProgress * 100 + 2}%; height: {scrubberHeight}px"
         ></div>
 
         <!-- playhead -->
@@ -123,9 +120,7 @@
     </button>
 
     <!-- time display -->
-    <div
-        class="flex justify-between text-xs text-emerald-400 text-center mt-2 font-quicksand font-bold select-none"
-    >
+    <div class="flex justify-between text-xs text-emerald-400 text-center mt-2 font-quicksand font-bold select-none">
         <span>{convertToMMSS(timeDisplayCurrentTime)}</span>
         <span>{convertToMMSS(duration)}</span>
     </div>

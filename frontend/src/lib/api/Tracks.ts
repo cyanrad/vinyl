@@ -1,6 +1,6 @@
 import PocketBase from "pocketbase";
 
-import { ALBUMS_COLLECTION, ARTISTS_COLLECTION, TRACKS_COLLECTION } from "./consts";
+import { TRACKS_COLLECTION } from "./consts";
 import type { Track } from "./Types";
 import { generateFileUrl } from "./Util";
 

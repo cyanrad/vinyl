@@ -10,10 +10,8 @@
 
     // api
     import { API_URL } from "./lib/api/consts";
-    import { getAllTracks, generateTrackAudioUrl } from "./lib/api/Tracks";
-    import { getAlbumById } from "./lib/api/Albums";
-    import { getArtistById } from "./lib/api/Artists";
-    import type { Track, Artist, Album } from "./lib/api/Types";
+    import { getAllTrackItem, generateTrackItemAudioUrl } from "./lib/api/TrackItems";
+    import type { TrackItem } from "./lib/api/Types";
     import PocketBase from "pocketbase";
 
     // Setting the FPS context to be used in animations
@@ -22,22 +20,24 @@
     // API instance
     const pb = new PocketBase(API_URL);
     setContext("pb", pb);
-    let tracks: Track[] = $state([]);
+    let tracks: TrackItem[] = $state([]);
 
     let activeTrackIndex: number | null = $state(null);
-    let activeTrack: Track | null = $state(null);
-    let activeArtist: Artist | null = $state(null);
-    let activeAlbum: Album | null = $state(null);
+    let activeTrack: TrackItem | null = $derived(activeTrackIndex !== null ? tracks[activeTrackIndex] : null);
 
     let audio: HTMLAudioElement | null = $state(null);
+    let currentTime: number = $state(0);
+    let duration: number = $state(0);
+    let currTimeUpdated: boolean = $state(false);
 
     onMount(async () => {
-        tracks = await getAllTracks(pb);
+        tracks = await getAllTrackItem(pb);
     });
 
     $effect(() => {
-        if (!activeTrackIndex) return;
+        if (activeTrackIndex === undefined || activeTrackIndex === null || !activeTrack) return;
 
+        // resetting audio variables
         untrack(() => {
             if (audio) {
                 audio.pause(); // Stop the audio
@@ -45,27 +45,20 @@
                 audio.load(); // Reset the audio element
                 audio = null; // Remove reference to allow GC
             }
+
+            currentTime = 0;
+            duration = 0;
+            currTimeUpdated = true;
         });
 
-        activeTrack = tracks[activeTrackIndex];
-        getArtistById(pb, activeTrack.artist).then((artist) => {
-            activeArtist = artist;
-        });
-
-        if (activeTrack.album) {
-            getAlbumById(pb, activeTrack.album).then((album) => {
-                activeAlbum = album;
-            });
-        }
-
-        audio = new Audio(generateTrackAudioUrl(activeTrack));
+        audio = new Audio(generateTrackItemAudioUrl(activeTrack));
     });
 </script>
 
 <main>
     <SideBar {tracks} bind:activeTrackIndex />
     <div class="flex items-center justify-center h-screen w-screen fixed inset-0">
-        <Base {activeTrack} {activeArtist} {activeAlbum} bind:audio />
+        <Base {activeTrack} {duration} bind:audio bind:currentTime bind:currTimeUpdated />
     </div>
 </main>
 

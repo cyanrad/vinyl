@@ -1,16 +1,15 @@
 <script lang="ts">
     import { onMount } from "svelte";
 
-    import { generateAlbumCoverUrl } from "./api/Albums";
-    import { generateArtistImageUrl } from "./api/Artists";
+    import { generateTrackItemAlbumCoverUrl, generateTrackItemArtistImageUrl } from "./api/TrackItems";
     import PlayerState from "./PlayerState";
 
-    let { playerState, activeTrack, activeArtist, activeAlbum, audio } = $props();
+    let { playerState, activeTrack, audio } = $props();
 
     // text
     let trackTitle: string = $derived(activeTrack?.title || "");
-    let artistName: string = $derived(activeArtist?.name || "");
-    let albumTitle: string = $derived(activeAlbum?.title || "404\nNo Album\n:D");
+    let artistName: string = $derived(activeTrack?.artistNames[0] || "");
+    let albumTitle: string = $derived(activeTrack?.albumTitle || "404\nNo Album\n:D");
 
     let playerStateText: string = $derived.by(() => {
         if (!audio) return "NO TRACK SELECTED :[";
@@ -18,8 +17,12 @@
     });
 
     // images
-    let albumCover: string | null = $derived(activeAlbum ? generateAlbumCoverUrl(activeAlbum) : null);
-    let artistImage: string | null = $derived(activeArtist ? generateArtistImageUrl(activeArtist) : null);
+    let albumCover: string | null = $derived(
+        activeTrack?.albumCover ? generateTrackItemAlbumCoverUrl(activeTrack) : null,
+    );
+    let artistImage: string | null = $derived(
+        activeTrack?.artistImages[0] ? generateTrackItemArtistImageUrl(activeTrack, 0) : null,
+    );
 
     // flicker animation
     const flickerFPS = 24;
@@ -85,6 +88,7 @@
 <div class="relative" style="width: {crtWidth}px; height: {crtHeight}px;">
     <!-- CRT effect -->
     <div class="z-10 absolute w-full h-full crt bg-emerald-900 rounded-lg" style="opacity: {currentOpacity};"></div>
+    <!-- <div class="z-10 absolute w-full h-full crt bg-zinc-800 rounded-lg opacity-20"></div> -->
     <div class="z-30 absolute w-full h-full crt bg-zinc-800 rounded-lg opacity-40"></div>
 
     <!-- Monitor Media -->

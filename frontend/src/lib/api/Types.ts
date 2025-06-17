@@ -4,7 +4,7 @@ export interface Track {
     readonly collectionName: string;
     readonly created: string;
     readonly updated: string;
-    artist: string; // relation ID
+    artists: string[]; // relation IDs
     audio: string; // filename
     album?: string;
     cover?: string; // filename
@@ -36,4 +36,26 @@ export interface Artist {
     description?: string;
     name: string;
     links?: Record<string, unknown>; // JSON field
+}
+
+export interface TrackItem {
+    // track
+    title: string;
+    description?: string;
+    audio: string; // filename
+    cover?: string; // filename
+    tags?: Record<string, unknown>; // JSON field
+
+    // album
+    albumTitle: string;
+    albumCover?: string; // filename
+
+    // artist
+    artistNames: string[];
+    artistImages: string[]; // filenames
+
+    // ids
+    trackId: string;
+    albumId: string;
+    artistIds: string[];
 }

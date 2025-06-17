@@ -13,18 +13,19 @@
     import PlayerState from "./PlayerState";
     import { getMovedAudioTime, getNewAudioTime } from "./Audio";
 
-    let { activeTrack, activeArtist, activeAlbum, audio = $bindable() } = $props();
+    let {
+        activeTrack,
+        duration,
+        audio = $bindable(),
+        currentTime = $bindable(),
+        currTimeUpdated = $bindable(),
+    } = $props();
 
     // the overall state of the player coordinated with all components
     let playerState: PlayerState = $state(PlayerState.Paused);
 
     // audio variables
-    let currentTime: number = $state(0);
-    let duration: number = $state(0);
     let volume: number = $state(0.5);
-
-    // flag for when a scrubber event happens
-    let currTimeUpdated: boolean = $state(false);
 
     // keyboard events
     onMount(async () => {
@@ -138,7 +139,7 @@
 
     <!-- display screen -->
     <div class="absolute z-40" style="top: {displayScreenTop}px; left: {displayScreenLeft}px; ">
-        <DisplayMonitor {playerState} {activeTrack} {activeArtist} {activeAlbum} {audio} />
+        <DisplayMonitor {playerState} {activeTrack} {audio} />
     </div>
 
     <!-- player head -->
@@ -147,7 +148,7 @@
     </div>
 
     <!-- vinyl -->
-    <Vinyl {playerState} {activeTrack} {activeAlbum} {activeArtist} {currentTime} {currTimeUpdated} />
+    <Vinyl {playerState} {activeTrack} {currentTime} {currTimeUpdated} />
 
     <!-- controller -->
     <div class="absolute" style="top: {controllerTop}px; left: {controllerLeft}px;">

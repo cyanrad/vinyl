@@ -33,7 +33,7 @@
 
         <!-- info bar -->
         {#if isSideBarOpen}
-            <div class="relative h-full z-10" transition:fly={{ x: -infoBarWidth, duration: 300, opacity: 90 }}>
+            <div class="relative h-full z-10" transition:fly={{ x: -infoBarWidth, duration: 300 }}>
                 <!-- outer -->
                 <div
                     class="absolute top-0 left-0 h-full bg-zinc-700 rounded-r-xl"
@@ -51,10 +51,10 @@
                     <!-- forcing the component to re-render to rerun the animation  -->
                     {#key resetKey}
                         <div
-                            class="flex flex-col gap-20 h-[calc(100%-10px)] overflow-y-auto p-4 rounded-4xl scroll-smooth scrollbar-none"
+                            class="flex flex-col gap-19 h-[calc(100%-10px)] overflow-y-auto p-4 rounded-4xl scroll-smooth scrollbar-none"
                         >
-                            {#each tracks as track, index}
-                                <TrackItem {track} {index} bind:activeTrackIndex />
+                            {#each tracks as trackItem, index}
+                                <TrackItem {trackItem} {index} bind:activeTrackIndex />
                             {/each}
                         </div>
                     {/key}
