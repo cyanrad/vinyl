@@ -16,13 +16,11 @@
     let {
         activeTrack,
         duration,
+        playerState = $bindable(),
         audio = $bindable(),
         currentTime = $bindable(),
         currTimeUpdated = $bindable(),
     } = $props();
-
-    // the overall state of the player coordinated with all components
-    let playerState: PlayerState = $state(PlayerState.Paused);
 
     // audio variables
     let volume: number = $state(0.5);
@@ -53,21 +51,6 @@
         });
     });
 
-    // attaching event listeners to the audio element
-    $effect(() => {
-        if (!audio) return;
-
-        // load duration when metadata is ready
-        audio.addEventListener("loadedmetadata", () => {
-            duration = audio.duration;
-        });
-
-        // update current time as it plays
-        audio.addEventListener("timeupdate", () => {
-            currentTime = audio.currentTime;
-        });
-    });
-
     // handle audio playback based on player state
     $effect(() => {
         if (!audio) return;
@@ -84,13 +67,6 @@
             audio.play();
         } else if (playerState === PlayerState.Paused) {
             audio.pause();
-        }
-
-        // stop playback if we reach the end
-        if (currentTime && duration && currentTime >= duration) {
-            playerState = PlayerState.Paused;
-            currentTime = 0;
-            currTimeUpdated = true;
         }
     });
 
