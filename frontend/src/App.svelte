@@ -5,8 +5,8 @@
     import "./app.css";
 
     // components
-    import Base from "./lib/Base.svelte";
-    import SideBar from "./lib/SideBar.svelte";
+    import Base from "./lib/base/Base.svelte";
+    import SideBar from "./lib/side-bar/SideBar.svelte";
 
     // api
     import { API_URL } from "./lib/api/consts";

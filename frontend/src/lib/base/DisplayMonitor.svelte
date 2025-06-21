@@ -1,8 +1,8 @@
 <script lang="ts">
     import { onMount } from "svelte";
 
-    import { generateTrackItemAlbumCoverUrl, generateTrackItemArtistImageUrl } from "./api/TrackItems";
-    import PlayerState from "./PlayerState";
+    import { generateTrackItemAlbumCoverUrl, generateTrackItemArtistImageUrl } from "../api/TrackItems";
+    import PlayerState from "../PlayerState";
 
     let { playerState, activeTrack, audio } = $props();
 
@@ -13,7 +13,7 @@
 
     let playerStateText: string = $derived.by(() => {
         if (!audio) return "NO TRACK SELECTED :[";
-        return playerState === PlayerState.Playing ? "CURRENTLY PLAYING" : "PAUSED :O";
+        return playerState === PlayerState.Playing ? "CURRENTLY PLAYING :)" : "PAUSED :O";
     });
 
     // images

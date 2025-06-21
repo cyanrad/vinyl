@@ -1,7 +1,7 @@
 <script lang="ts">
     import { fly } from "svelte/transition";
 
-    import { generateTrackItemCoverUrl } from "./api/TrackItems";
+    import { generateTrackItemCoverUrl } from "../api/TrackItems";
 
     let { trackItem, index, activeTrackIndex = $bindable() } = $props();
 

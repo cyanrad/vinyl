@@ -1,13 +1,13 @@
 <script lang="ts">
     import { onMount, untrack, getContext } from "svelte";
-    import PlayerState from "./PlayerState";
+    import PlayerState from "../PlayerState";
 
     // API
     import {
         generateTrackItemCoverUrl,
         generateTrackItemAlbumCoverUrl,
         generateTrackItemArtistImageUrl,
-    } from "./api/TrackItems";
+    } from "../api/TrackItems";
 
     // We need information about the general play state, audio timeing and track data
     let { playerState, activeTrack, currentTime, currTimeUpdated } = $props();

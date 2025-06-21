@@ -1,7 +1,7 @@
 <script lang="ts">
     import { onMount, untrack, getContext } from "svelte";
 
-    import PlayerState from "./PlayerState";
+    import PlayerState from "../PlayerState";
 
     let { currentTime, currTimeUpdated, duration, playerState } = $props();
     let playerArmElement: HTMLImageElement | null = $state(null);

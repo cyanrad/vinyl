@@ -10,8 +10,8 @@
     import DisplayMonitor from "./DisplayMonitor.svelte";
 
     // state
-    import PlayerState from "./PlayerState";
-    import { getMovedAudioTime, getNewAudioTime } from "./Audio";
+    import PlayerState from "../PlayerState";
+    import { getMovedAudioTime, getNewAudioTime } from "../Audio";
 
     let {
         activeTrack,
