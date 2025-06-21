@@ -1,9 +1,0 @@
-[{
-    "name": "example artist",
-    "description": "This is an example artist description.",
-    "links": {
-        "soundcloud": "https://soundcloud.com/example",
-        "spotify":  "https://open.spotify.com/artist/example",
-        "personal": "https://example.com",
-    },
-}]

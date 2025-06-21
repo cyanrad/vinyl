@@ -64,3 +64,51 @@ func (q *Queries) GetAllTrackItems(ctx context.Context) ([]GetAllTrackItemsRow, 
 	}
 	return items, nil
 }
+
+const getAllTracks = `-- name: GetAllTracks :many
+SELECT  id, title, description, tags, created_at
+  FROM  tracks AS t
+ ORDER  BY t.created_at
+`
+
+func (q *Queries) GetAllTracks(ctx context.Context) ([]Track, error) {
+	rows, err := q.db.QueryContext(ctx, getAllTracks)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Track
+	for rows.Next() {
+		var i Track
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Description,
+			&i.Tags,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getArtistByName = `-- name: GetArtistByName :one
+SELECT  a.id
+  FROM  artists AS a
+ WHERE  a.name = ?
+`
+
+func (q *Queries) GetArtistByName(ctx context.Context, name string) (int64, error) {
+	row := q.db.QueryRowContext(ctx, getArtistByName, name)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}

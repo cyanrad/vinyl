@@ -67,8 +67,8 @@ func (q *Queries) CreatePlaylist(ctx context.Context, arg CreatePlaylistParams) 
 	return err
 }
 
-const createTrack = `-- name: CreateTrack :exec
-INSERT INTO tracks (title, description, tags) VALUES (?, ?, ?)
+const createTrack = `-- name: CreateTrack :one
+INSERT INTO tracks (title, description, tags) VALUES (?, ?, ?) RETURNING id, title, description, tags, created_at
 `
 
 type CreateTrackParams struct {
@@ -77,49 +77,60 @@ type CreateTrackParams struct {
 	Tags        sql.NullString `json:"tags"`
 }
 
-func (q *Queries) CreateTrack(ctx context.Context, arg CreateTrackParams) error {
-	_, err := q.db.ExecContext(ctx, createTrack, arg.Title, arg.Description, arg.Tags)
-	return err
+func (q *Queries) CreateTrack(ctx context.Context, arg CreateTrackParams) (Track, error) {
+	row := q.db.QueryRowContext(ctx, createTrack, arg.Title, arg.Description, arg.Tags)
+	var i Track
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.Description,
+		&i.Tags,
+		&i.CreatedAt,
+	)
+	return i, err
 }
 
 const createTrackAlbum = `-- name: CreateTrackAlbum :exec
-INSERT INTO tracks_albums (track_id, album_id) VALUES (?, ?)
+INSERT INTO tracks_albums (track_id, album_id, rank) VALUES (?, ?, ?)
 `
 
 type CreateTrackAlbumParams struct {
 	TrackID int64 `json:"track_id"`
 	AlbumID int64 `json:"album_id"`
+	Rank    int64 `json:"rank"`
 }
 
 func (q *Queries) CreateTrackAlbum(ctx context.Context, arg CreateTrackAlbumParams) error {
-	_, err := q.db.ExecContext(ctx, createTrackAlbum, arg.TrackID, arg.AlbumID)
+	_, err := q.db.ExecContext(ctx, createTrackAlbum, arg.TrackID, arg.AlbumID, arg.Rank)
 	return err
 }
 
 const createTrackArtist = `-- name: CreateTrackArtist :exec
-INSERT INTO tracks_artists (track_id, artist_id) VALUES (?, ?)
+INSERT INTO tracks_artists (track_id, artist_id, rank) VALUES (?, ?, ?)
 `
 
 type CreateTrackArtistParams struct {
 	TrackID  int64 `json:"track_id"`
 	ArtistID int64 `json:"artist_id"`
+	Rank     int64 `json:"rank"`
 }
 
 func (q *Queries) CreateTrackArtist(ctx context.Context, arg CreateTrackArtistParams) error {
-	_, err := q.db.ExecContext(ctx, createTrackArtist, arg.TrackID, arg.ArtistID)
+	_, err := q.db.ExecContext(ctx, createTrackArtist, arg.TrackID, arg.ArtistID, arg.Rank)
 	return err
 }
 
 const createTrackPlaylist = `-- name: CreateTrackPlaylist :exec
-INSERT INTO tracks_playlists (track_id, playlist_id) VALUES (?, ?)
+INSERT INTO tracks_playlists (track_id, playlist_id, rank) VALUES (?, ?, ?)
 `
 
 type CreateTrackPlaylistParams struct {
 	TrackID    int64 `json:"track_id"`
 	PlaylistID int64 `json:"playlist_id"`
+	Rank       int64 `json:"rank"`
 }
 
 func (q *Queries) CreateTrackPlaylist(ctx context.Context, arg CreateTrackPlaylistParams) error {
-	_, err := q.db.ExecContext(ctx, createTrackPlaylist, arg.TrackID, arg.PlaylistID)
+	_, err := q.db.ExecContext(ctx, createTrackPlaylist, arg.TrackID, arg.PlaylistID, arg.Rank)
 	return err
 }

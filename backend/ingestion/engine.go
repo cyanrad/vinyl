@@ -1,33 +1,52 @@
 package ingestion
 
-import "database/sql"
-
-type IngestionType string
-
-const (
-	INGESTION_TYPE_TRACK    IngestionType = "track"
-	INGESTION_TYPE_ARTIST   IngestionType = "artist"
-	INGESTION_TYPE_ALBUM    IngestionType = "album"
-	INGESTION_TYPE_PLAYLIST IngestionType = "playlist"
+import (
+	"encoding/json"
+	"main/db"
+	"os"
 )
 
-type IngestionEngine struct {
-	cache     *IngestionCache
-	db        *sql.DB
-	MediaPath string
+type Engine struct {
+	cache    *Cache
+	queries  *db.Queries
+	dataPath string
 }
 
-func NewIngestionEngine(mediaPath string, db *sql.DB) *IngestionEngine {
-	cache := NewIngestionCache(mediaPath)
-	return &IngestionEngine{
-		cache:     cache,
-		db:        db,
-		MediaPath: mediaPath,
+func NewEngine(dataPath string, queries *db.Queries) *Engine {
+	cache := NewCache(dataPath)
+	return &Engine{
+		cache:    cache,
+		queries:  queries,
+		dataPath: dataPath,
 	}
 }
 
-func (e *IngestionEngine) IngestAllArtists() []error {
-	errs := []error{}
+func (e *Engine) IngestArtists() ([]ArtistIngestion, error) {
+	artistData, err := os.ReadFile(e.dataPath + "/" + string(INGESTION_TYPE_ARTISTS) + ".json")
+	if err != nil {
+		return nil, err
+	}
 
-	return errs
+	var artists []ArtistIngestion
+	err = json.Unmarshal(artistData, &artists)
+	if err != nil {
+		return nil, err
+	}
+
+	return artists, nil
+}
+
+func (e *Engine) IngestTracks() ([]TrackIngestion, error) {
+	trackData, err := os.ReadFile(e.dataPath + "/" + string(INGESTION_TYPE_TRACKS) + ".json")
+	if err != nil {
+		return nil, err
+	}
+
+	var tracks []TrackIngestion
+	err = json.Unmarshal(trackData, &tracks)
+	if err != nil {
+		return nil, err
+	}
+
+	return tracks, nil
 }

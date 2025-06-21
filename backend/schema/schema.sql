@@ -8,7 +8,7 @@ CREATE TABLE tracks (
 
 CREATE TABLE artists (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name VARCHAR(255) NOT NULL,
+    name VARCHAR(255) UNIQUE NOT NULL,
     description TEXT,
     links TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

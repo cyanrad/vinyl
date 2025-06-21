@@ -1,13 +1,13 @@
 package ingestion
 
-type IngestionCache struct {
-	cache     map[string]interface{}
-	MediaPath string
+type Cache struct {
+	cache    map[string]interface{}
+	dataPath string
 }
 
-func NewIngestionCache(mediaPath string) *IngestionCache {
-	return &IngestionCache{
-		cache:     make(map[string]interface{}),
-		MediaPath: mediaPath,
+func NewCache(dataPath string) *Cache {
+	return &Cache{
+		cache:    make(map[string]interface{}),
+		dataPath: dataPath,
 	}
 }

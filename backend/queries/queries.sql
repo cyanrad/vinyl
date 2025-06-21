@@ -12,3 +12,13 @@ SELECT  t.id                         AS track_id,
   LEFT  JOIN albums AS al             ON tal.album_id = al.id
  GROUP  BY 1,2,3,4
  ORDER  BY t.created_at;
+
+-- name: GetArtistByName :one
+SELECT  a.id
+  FROM  artists AS a
+ WHERE  a.name = ?;
+
+-- name: GetAllTracks :many
+SELECT  *
+  FROM  tracks AS t
+ ORDER  BY t.created_at;
