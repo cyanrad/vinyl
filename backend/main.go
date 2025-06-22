@@ -11,6 +11,8 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+const MediaPath string = "../music/"
+
 func main() {
 	fmt.Println("Starting...")
 	conn, err := sql.Open("sqlite3", "database.db")
@@ -24,6 +26,7 @@ func main() {
 	fmt.Println("Connected to database")
 
 	// engine := ingestion.NewEngine("../music/data", queries)
+	// engine.IngestAndCreateData()
 
 	fmt.Println("Getting all track items...")
 	trackItems, err := queries.GetAllTrackItems(context.Background())
@@ -34,9 +37,11 @@ func main() {
 	fmt.Println(trackItems)
 
 	e := echo.New()
-	e.GET("/track-item", func(c echo.Context) error {
+	e.GET("/track-items", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, trackItems)
 	})
+
+	e.GET("/tracks/:id/cover", serveTrackCoverImage(queries))
 
 	e.Logger.Fatal(e.Start(":8080"))
 }

@@ -24,7 +24,7 @@ func NewEngine(dataPath string, queries *db.Queries) *Engine {
 }
 
 func (e *Engine) IngestArtists() ([]ArtistIngestion, error) {
-	artistData, err := os.ReadFile(e.dataPath + "/" + string(IngestionTypeArtists) + ".json")
+	artistData, err := os.ReadFile(e.dataPath + "/" + string(ARTISTS) + ".json")
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +39,7 @@ func (e *Engine) IngestArtists() ([]ArtistIngestion, error) {
 }
 
 func (e *Engine) IngestTracks() ([]TrackIngestion, error) {
-	trackData, err := os.ReadFile(e.dataPath + "/" + string(IngestionTypeTracks) + ".json")
+	trackData, err := os.ReadFile(e.dataPath + "/" + string(TRACKS) + ".json")
 	if err != nil {
 		return nil, err
 	}

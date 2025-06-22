@@ -14,8 +14,8 @@ SELECT  t.id                         AS track_id,
         t.title,
         al.id                        AS album_id,
         al.name                      AS album_name,
-        GROUP_CONCAT(ar.id, ', ')    AS artist_ids,
-        GROUP_CONCAT(ar.name, ', ')  AS artist_names
+        GROUP_CONCAT(ar.id, ',')     AS artist_ids,
+        GROUP_CONCAT(ar.name, ',')   AS artist_names
   FROM  tracks AS t
   JOIN  tracks_artists AS tar         ON t.id = tar.track_id
   JOIN  artists AS ar                 ON tar.artist_id = ar.id
@@ -110,4 +110,43 @@ func (q *Queries) GetArtistByName(ctx context.Context, name string) (int64, erro
 	var id int64
 	err := row.Scan(&id)
 	return id, err
+}
+
+const getOneTrackItems = `-- name: GetOneTrackItems :one
+SELECT  t.id                         AS track_id,
+        t.title,
+        al.id                        AS album_id,
+        al.name                      AS album_name,
+        GROUP_CONCAT(ar.id, ',')     AS artist_ids,
+        GROUP_CONCAT(ar.name, ',')   AS artist_names
+  FROM  tracks AS t
+  JOIN  tracks_artists AS tar         ON t.id = tar.track_id
+  JOIN  artists AS ar                 ON tar.artist_id = ar.id
+  LEFT  JOIN tracks_albums AS tal     ON t.id = tal.track_id
+  LEFT  JOIN albums AS al             ON tal.album_id = al.id
+ WHERE  t.id = ?
+ GROUP  BY 1,2,3,4
+`
+
+type GetOneTrackItemsRow struct {
+	TrackID     int64   `json:"track_id"`
+	Title       string  `json:"title"`
+	AlbumID     *int64  `json:"album_id"`
+	AlbumName   *string `json:"album_name"`
+	ArtistIds   string  `json:"artist_ids"`
+	ArtistNames string  `json:"artist_names"`
+}
+
+func (q *Queries) GetOneTrackItems(ctx context.Context, id int64) (GetOneTrackItemsRow, error) {
+	row := q.db.QueryRowContext(ctx, getOneTrackItems, id)
+	var i GetOneTrackItemsRow
+	err := row.Scan(
+		&i.TrackID,
+		&i.Title,
+		&i.AlbumID,
+		&i.AlbumName,
+		&i.ArtistIds,
+		&i.ArtistNames,
+	)
+	return i, err
 }

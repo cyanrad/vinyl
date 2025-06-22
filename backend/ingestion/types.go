@@ -5,10 +5,10 @@ import "encoding/json"
 type IngestionType string
 
 const (
-	IngestionTypeTracks   IngestionType = "tracks"
-	IngestionTypeArtists  IngestionType = "artists"
-	IngestionTypeAlbums   IngestionType = "albums"
-	IngestionTypePlaylist IngestionType = "playlists"
+	TRACKS    IngestionType = "tracks"
+	ARTISTS   IngestionType = "artists"
+	ALBUMS    IngestionType = "albums"
+	PLAYLISTS IngestionType = "playlists"
 )
 
 type ArtistIngestion struct {
