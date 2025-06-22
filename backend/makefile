@@ -1,8 +1,5 @@
 .PHONY: pb generate-db
 
-pb:
-	pocketbase serve --dir ./pocketbase/database --publicDir ./pocketbase/public --migrationsDir ./pocketbase/migrations
-
 generate-db:
 	sqlc generate
 
