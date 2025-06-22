@@ -7,7 +7,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
 )
 
 const getAllTrackItems = `-- name: GetAllTrackItems :many
@@ -27,12 +26,12 @@ SELECT  t.id                         AS track_id,
 `
 
 type GetAllTrackItemsRow struct {
-	TrackID     int64          `json:"track_id"`
-	Title       string         `json:"title"`
-	AlbumID     sql.NullInt64  `json:"album_id"`
-	AlbumName   sql.NullString `json:"album_name"`
-	ArtistIds   string         `json:"artist_ids"`
-	ArtistNames string         `json:"artist_names"`
+	TrackID     int64   `json:"track_id"`
+	Title       string  `json:"title"`
+	AlbumID     *int64  `json:"album_id"`
+	AlbumName   *string `json:"album_name"`
+	ArtistIds   string  `json:"artist_ids"`
+	ArtistNames string  `json:"artist_names"`
 }
 
 func (q *Queries) GetAllTrackItems(ctx context.Context) ([]GetAllTrackItemsRow, error) {

@@ -5,8 +5,9 @@ import (
 	"database/sql"
 	"fmt"
 	"main/db"
-	"main/ingestion"
+	"net/http"
 
+	"github.com/labstack/echo/v4"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -22,41 +23,20 @@ func main() {
 	queries := db.New(conn)
 	fmt.Println("Connected to database")
 
-	engine := ingestion.NewEngine("../music/data", queries)
+	// engine := ingestion.NewEngine("../music/data", queries)
 
-	artists, err := engine.IngestArtists()
+	fmt.Println("Getting all track items...")
+	trackItems, err := queries.GetAllTrackItems(context.Background())
 	if err != nil {
 		panic(err)
 	}
 
-	tracks, err := engine.IngestTracks()
-	if err != nil {
-		panic(err)
-	}
+	fmt.Println(trackItems)
 
-	fmt.Println(artists)
-	engine.CreateArtists(artists)
-	fmt.Println("Created artists")
+	e := echo.New()
+	e.GET("/track-item", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, trackItems)
+	})
 
-	fmt.Println(tracks)
-	err = engine.CreateTracks(tracks)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("Created tracks")
-
-	db_tracks, err := queries.GetAllTracks(context.Background())
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(db_tracks)
-
-	// Get all track items
-	// fmt.Println("Getting all track items...")
-	// trackItems, err := queries.GetAllTrackItems(context.Background())
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// fmt.Println(trackItems)
+	e.Logger.Fatal(e.Start(":8080"))
 }

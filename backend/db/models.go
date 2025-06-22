@@ -5,22 +5,22 @@
 package db
 
 import (
-	"database/sql"
+	"time"
 )
 
 type Album struct {
-	ID          int64          `json:"id"`
-	Name        string         `json:"name"`
-	Description sql.NullString `json:"description"`
-	CreatedAt   sql.NullTime   `json:"created_at"`
+	ID          int64     `json:"id"`
+	Name        string    `json:"name"`
+	Description *string   `json:"description"`
+	CreatedAt   time.Time `json:"created_at"`
 }
 
 type Artist struct {
-	ID          int64          `json:"id"`
-	Name        string         `json:"name"`
-	Description sql.NullString `json:"description"`
-	Links       sql.NullString `json:"links"`
-	CreatedAt   sql.NullTime   `json:"created_at"`
+	ID          int64     `json:"id"`
+	Name        string    `json:"name"`
+	Description *string   `json:"description"`
+	Links       string    `json:"links"`
+	CreatedAt   time.Time `json:"created_at"`
 }
 
 type ArtistsAlbum struct {
@@ -29,18 +29,18 @@ type ArtistsAlbum struct {
 }
 
 type Playlist struct {
-	ID          int64          `json:"id"`
-	Name        string         `json:"name"`
-	Description sql.NullString `json:"description"`
-	CreatedAt   sql.NullTime   `json:"created_at"`
+	ID          int64     `json:"id"`
+	Name        string    `json:"name"`
+	Description *string   `json:"description"`
+	CreatedAt   time.Time `json:"created_at"`
 }
 
 type Track struct {
-	ID          int64          `json:"id"`
-	Title       string         `json:"title"`
-	Description sql.NullString `json:"description"`
-	Tags        sql.NullString `json:"tags"`
-	CreatedAt   sql.NullTime   `json:"created_at"`
+	ID          int64     `json:"id"`
+	Title       string    `json:"title"`
+	Description *string   `json:"description"`
+	Tags        *string   `json:"tags"`
+	CreatedAt   time.Time `json:"created_at"`
 }
 
 type TracksAlbum struct {

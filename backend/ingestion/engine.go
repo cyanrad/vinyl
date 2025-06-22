@@ -1,3 +1,5 @@
+// Package ingestion is meant for handling artist, tracks, albums, etc. data from json file
+// and loading it into the database.
 package ingestion
 
 import (
@@ -22,7 +24,7 @@ func NewEngine(dataPath string, queries *db.Queries) *Engine {
 }
 
 func (e *Engine) IngestArtists() ([]ArtistIngestion, error) {
-	artistData, err := os.ReadFile(e.dataPath + "/" + string(INGESTION_TYPE_ARTISTS) + ".json")
+	artistData, err := os.ReadFile(e.dataPath + "/" + string(IngestionTypeArtists) + ".json")
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +39,7 @@ func (e *Engine) IngestArtists() ([]ArtistIngestion, error) {
 }
 
 func (e *Engine) IngestTracks() ([]TrackIngestion, error) {
-	trackData, err := os.ReadFile(e.dataPath + "/" + string(INGESTION_TYPE_TRACKS) + ".json")
+	trackData, err := os.ReadFile(e.dataPath + "/" + string(IngestionTypeTracks) + ".json")
 	if err != nil {
 		return nil, err
 	}
@@ -49,4 +51,28 @@ func (e *Engine) IngestTracks() ([]TrackIngestion, error) {
 	}
 
 	return tracks, nil
+}
+
+func (e *Engine) IngestAndCreateData() error {
+	artists, err := e.IngestArtists()
+	if err != nil {
+		return err
+	}
+
+	tracks, err := e.IngestTracks()
+	if err != nil {
+		return err
+	}
+
+	err = e.CreateArtists(artists)
+	if err != nil {
+		return err
+	}
+
+	err = e.CreateTracks(tracks)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

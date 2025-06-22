@@ -7,7 +7,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
 )
 
 const createAlbum = `-- name: CreateAlbum :exec
@@ -15,8 +14,8 @@ INSERT INTO albums (name, description) VALUES (?, ?)
 `
 
 type CreateAlbumParams struct {
-	Name        string         `json:"name"`
-	Description sql.NullString `json:"description"`
+	Name        string  `json:"name"`
+	Description *string `json:"description"`
 }
 
 func (q *Queries) CreateAlbum(ctx context.Context, arg CreateAlbumParams) error {
@@ -29,9 +28,9 @@ INSERT INTO artists (name, description, links) VALUES (?, ?, ?)
 `
 
 type CreateArtistParams struct {
-	Name        string         `json:"name"`
-	Description sql.NullString `json:"description"`
-	Links       sql.NullString `json:"links"`
+	Name        string  `json:"name"`
+	Description *string `json:"description"`
+	Links       string  `json:"links"`
 }
 
 func (q *Queries) CreateArtist(ctx context.Context, arg CreateArtistParams) error {
@@ -58,8 +57,8 @@ INSERT INTO playlists (name, description) VALUES (?, ?)
 `
 
 type CreatePlaylistParams struct {
-	Name        string         `json:"name"`
-	Description sql.NullString `json:"description"`
+	Name        string  `json:"name"`
+	Description *string `json:"description"`
 }
 
 func (q *Queries) CreatePlaylist(ctx context.Context, arg CreatePlaylistParams) error {
@@ -72,9 +71,9 @@ INSERT INTO tracks (title, description, tags) VALUES (?, ?, ?) RETURNING id, tit
 `
 
 type CreateTrackParams struct {
-	Title       string         `json:"title"`
-	Description sql.NullString `json:"description"`
-	Tags        sql.NullString `json:"tags"`
+	Title       string  `json:"title"`
+	Description *string `json:"description"`
+	Tags        *string `json:"tags"`
 }
 
 func (q *Queries) CreateTrack(ctx context.Context, arg CreateTrackParams) (Track, error) {

@@ -2,22 +2,17 @@ package ingestion
 
 import (
 	"context"
-	"database/sql"
 	"main/db"
 	"strings"
 )
 
 func (e *Engine) CreateArtists(artists []ArtistIngestion) error {
 	for _, artist := range artists {
-		description := sql.NullString{String: "", Valid: false}
-		if artist.Description != nil {
-			description = sql.NullString{String: *artist.Description, Valid: true}
-		}
 
 		err := e.queries.CreateArtist(context.Background(), db.CreateArtistParams{
 			Name:        artist.Name,
-			Description: description,
-			Links:       sql.NullString{String: artist.Links.ToString(), Valid: true},
+			Description: artist.Description,
+			Links:       artist.Links.ToString(),
 		})
 		if err != nil {
 			return err
@@ -39,15 +34,16 @@ func (e *Engine) CreateTracks(tracks []TrackIngestion) error {
 			artistIDs = append(artistIDs, artistID)
 		}
 
-		description := sql.NullString{String: "", Valid: false}
-		if track.Description != nil {
-			description = sql.NullString{String: *track.Description, Valid: true}
+		var tags *string
+		if len(track.Tags) > 0 {
+			joined := strings.Join(track.Tags, ", ")
+			tags = &joined
 		}
 
 		track, err := e.queries.CreateTrack(context.Background(), db.CreateTrackParams{
 			Title:       track.Title,
-			Description: description,
-			Tags:        sql.NullString{String: strings.Join(track.Tags, ", "), Valid: true},
+			Description: track.Description,
+			Tags:        tags,
 		})
 		if err != nil {
 			return err
@@ -59,7 +55,6 @@ func (e *Engine) CreateTracks(tracks []TrackIngestion) error {
 				ArtistID: artistID,
 				Rank:     int64(i + 1),
 			})
-
 			if err != nil {
 				return err
 			}

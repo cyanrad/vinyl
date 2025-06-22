@@ -7,5 +7,7 @@ sql:
       go:
         package: "db"
         out: "db"
+        # return type from queries will be pointers rather than sql.Null...
+        emit_pointers_for_null_types: true
+        # we want the JSON tags so we can easily marshal the data when responding to API req
         emit_json_tags: true
-        emit_prepared_queries: false
