@@ -42,6 +42,7 @@ func main() {
 	})
 
 	e.GET("/tracks/:id/cover", serveTrackCoverImage(queries))
+	e.GET("/artists/:id/cover", serveArtistImage(queries))
 
 	e.Logger.Fatal(e.Start(":8080"))
 }

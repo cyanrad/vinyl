@@ -16,6 +16,72 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+func serveArtistImage(db *db.Queries) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		// getting artist ID
+		idStr := c.Param("id")
+
+		id, err := strconv.ParseInt(idStr, 10, 64)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusNotFound, "Artist id "+idStr+" is not valid")
+		}
+
+		// getting artist data
+		artist, err := db.GetArtistById(context.Background(), id)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusNotFound, "Artist id "+idStr+" cannot be found")
+		}
+
+		// getting artist image path
+		path, exists := checkIfImageExists(ingestion.ARTISTS, artist.Name)
+		if !exists {
+			return echo.NewHTTPError(http.StatusNotFound, "Image not found")
+		}
+
+		// Log the request
+		log.Printf("Serving artist image: %s to %s", path, c.RealIP())
+
+		// Set appropriate headers
+		c.Response().Header().Set("Cache-Control", "public, max-age=3600")
+
+		// Serve the file
+		return c.File(path)
+	}
+}
+
+func serveAlbumImage(db *db.Queries) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		// getting album ID
+		idStr := c.Param("id")
+
+		id, err := strconv.ParseInt(idStr, 10, 64)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusNotFound, "Album id "+idStr+" is not valid")
+		}
+
+		// getting album data
+		album, err := db.GetAlbumById(context.Background(), id)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusNotFound, "Album id "+idStr+" cannot be found")
+		}
+
+		// getting album image path
+		path, exists := checkIfImageExists(ingestion.ALBUMS, album.Name)
+		if !exists {
+			return echo.NewHTTPError(http.StatusNotFound, "Album not found")
+		}
+
+		// Log the request
+		log.Printf("Serving album image: %s to %s", path, c.RealIP())
+
+		// Set appropriate headers
+		c.Response().Header().Set("Cache-Control", "public, max-age=3600")
+
+		// Serve the file
+		return c.File(path)
+	}
+}
+
 func serveTrackCoverImage(db *db.Queries) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		// getting track ID
@@ -27,11 +93,12 @@ func serveTrackCoverImage(db *db.Queries) echo.HandlerFunc {
 		}
 
 		// getting track item
-		trackItem, err := db.GetOneTrackItems(context.Background(), id)
+		trackItem, err := db.GetTrackItemById(context.Background(), id)
 		if err != nil {
 			return echo.NewHTTPError(http.StatusNotFound, "Track id "+idStr+" cannot be found")
 		}
 
+		// getting track cover file path
 		path, exists := getTrackCoverFilePath(trackItem)
 		if !exists {
 			return echo.NewHTTPError(http.StatusNotFound, "Image not found")
@@ -48,7 +115,7 @@ func serveTrackCoverImage(db *db.Queries) echo.HandlerFunc {
 	}
 }
 
-func getTrackCoverFilePath(trackItem db.GetOneTrackItemsRow) (string, bool) {
+func getTrackCoverFilePath(trackItem db.GetTrackItemByIdRow) (string, bool) {
 	artistName := strings.Split(trackItem.ArtistNames, ",")[0]
 
 	// we attempt to find a cover for the track first, then ablum cover then artist image

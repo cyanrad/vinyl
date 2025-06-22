@@ -13,7 +13,7 @@ SELECT  t.id                         AS track_id,
  GROUP  BY 1,2,3,4
  ORDER  BY t.created_at;
 
--- name: GetOneTrackItems :one
+-- name: GetTrackItemById :one
 SELECT  t.id                         AS track_id,
         t.title,
         al.id                        AS album_id,
@@ -33,3 +33,12 @@ SELECT  a.id
   FROM  artists AS a
  WHERE  a.name = ?;
 
+-- name: GetArtistById :one
+SELECT  a.*
+  FROM  artists a
+ WHERE  a.id = ?;
+
+-- name: GetAlbumById :one
+SELECT  a.*
+  FROM  albums a
+ WHERE  a.id = ?;
