@@ -16,8 +16,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// : serveTrackCoverImage(),
-
 func serveTrackCoverImage(db *db.Queries) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		// getting track ID
