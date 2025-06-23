@@ -43,8 +43,8 @@ INSERT INTO artists_albums (artist_id, album_id) VALUES (?, ?)
 `
 
 type CreateArtistAlbumParams struct {
-	ArtistID int64 `json:"artist_id"`
-	AlbumID  int64 `json:"album_id"`
+	ArtistID int64 `json:"artistId"`
+	AlbumID  int64 `json:"albumId"`
 }
 
 func (q *Queries) CreateArtistAlbum(ctx context.Context, arg CreateArtistAlbumParams) error {
@@ -94,8 +94,8 @@ INSERT INTO tracks_albums (track_id, album_id, rank) VALUES (?, ?, ?)
 `
 
 type CreateTrackAlbumParams struct {
-	TrackID int64 `json:"track_id"`
-	AlbumID int64 `json:"album_id"`
+	TrackID int64 `json:"trackId"`
+	AlbumID int64 `json:"albumId"`
 	Rank    int64 `json:"rank"`
 }
 
@@ -109,8 +109,8 @@ INSERT INTO tracks_artists (track_id, artist_id, rank) VALUES (?, ?, ?)
 `
 
 type CreateTrackArtistParams struct {
-	TrackID  int64 `json:"track_id"`
-	ArtistID int64 `json:"artist_id"`
+	TrackID  int64 `json:"trackId"`
+	ArtistID int64 `json:"artistId"`
 	Rank     int64 `json:"rank"`
 }
 
@@ -124,8 +124,8 @@ INSERT INTO tracks_playlists (track_id, playlist_id, rank) VALUES (?, ?, ?)
 `
 
 type CreateTrackPlaylistParams struct {
-	TrackID    int64 `json:"track_id"`
-	PlaylistID int64 `json:"playlist_id"`
+	TrackID    int64 `json:"trackId"`
+	PlaylistID int64 `json:"playlistId"`
 	Rank       int64 `json:"rank"`
 }
 

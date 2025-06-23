@@ -3,11 +3,7 @@
     import PlayerState from "../PlayerState";
 
     // API
-    import {
-        generateTrackItemCoverUrl,
-        generateTrackItemAlbumCoverUrl,
-        generateTrackItemArtistImageUrl,
-    } from "../api/TrackItems";
+    import { generateTrackItemCoverUrl } from "../api/TrackItems";
 
     // We need information about the general play state, audio timeing and track data
     let { playerState, activeTrack, currentTime, currTimeUpdated } = $props();
@@ -23,17 +19,7 @@
     let coverElement: HTMLImageElement | null = $state(null);
 
     // image of the vinyl cover
-    let coverImage: string | null = $derived.by(() => {
-        if (activeTrack && activeTrack.cover) {
-            return generateTrackItemCoverUrl(activeTrack);
-        } else if (activeTrack && activeTrack.albumCover) {
-            return generateTrackItemAlbumCoverUrl(activeTrack);
-        } else if (activeTrack && activeTrack.artistImages[0]) {
-            return generateTrackItemArtistImageUrl(activeTrack, 0);
-        } else {
-            return null;
-        }
-    });
+    let coverImage: string | null = $derived(activeTrack ? generateTrackItemCoverUrl(activeTrack) : null);
 
     // animation frame ID for controlling the rotation on/off
     let animationId: number | null = null;

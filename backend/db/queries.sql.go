@@ -28,12 +28,12 @@ func (q *Queries) GetAlbumById(ctx context.Context, id int64) (Album, error) {
 }
 
 const getAllTrackItems = `-- name: GetAllTrackItems :many
-SELECT  t.id                         AS track_id,
+SELECT  t.id                        AS track_id,
         t.title,
-        al.id                        AS album_id,
-        al.name                      AS album_name,
-        GROUP_CONCAT(ar.id, ',')     AS artist_ids,
-        GROUP_CONCAT(ar.name, ',')   AS artist_names
+        al.id                       AS album_id,
+        al.name                     AS album_name,
+        JSON_GROUP_ARRAY(ar.id)     AS artist_ids,
+        JSON_GROUP_ARRAY(ar.name)   AS artist_names
   FROM  tracks AS t
   JOIN  tracks_artists AS tar         ON t.id = tar.track_id
   JOIN  artists AS ar                 ON tar.artist_id = ar.id
@@ -44,12 +44,12 @@ SELECT  t.id                         AS track_id,
 `
 
 type GetAllTrackItemsRow struct {
-	TrackID     int64   `json:"track_id"`
-	Title       string  `json:"title"`
-	AlbumID     *int64  `json:"album_id"`
-	AlbumName   *string `json:"album_name"`
-	ArtistIds   string  `json:"artist_ids"`
-	ArtistNames string  `json:"artist_names"`
+	TrackID     int64       `json:"trackId"`
+	Title       string      `json:"title"`
+	AlbumID     *int64      `json:"albumId"`
+	AlbumName   *string     `json:"albumName"`
+	ArtistIds   interface{} `json:"artistIds"`
+	ArtistNames interface{} `json:"artistNames"`
 }
 
 func (q *Queries) GetAllTrackItems(ctx context.Context) ([]GetAllTrackItemsRow, error) {
@@ -131,12 +131,12 @@ SELECT  t.id                         AS track_id,
 `
 
 type GetTrackItemByIdRow struct {
-	TrackID     int64   `json:"track_id"`
+	TrackID     int64   `json:"trackId"`
 	Title       string  `json:"title"`
-	AlbumID     *int64  `json:"album_id"`
-	AlbumName   *string `json:"album_name"`
-	ArtistIds   string  `json:"artist_ids"`
-	ArtistNames string  `json:"artist_names"`
+	AlbumID     *int64  `json:"albumId"`
+	AlbumName   *string `json:"albumName"`
+	ArtistIds   string  `json:"artistIds"`
+	ArtistNames string  `json:"artistNames"`
 }
 
 func (q *Queries) GetTrackItemById(ctx context.Context, id int64) (GetTrackItemByIdRow, error) {

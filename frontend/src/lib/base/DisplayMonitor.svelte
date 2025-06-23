@@ -17,12 +17,8 @@
     });
 
     // images
-    let albumCover: string | null = $derived(
-        activeTrack?.albumCover ? generateTrackItemAlbumCoverUrl(activeTrack) : null,
-    );
-    let artistImage: string | null = $derived(
-        activeTrack?.artistImages[0] ? generateTrackItemArtistImageUrl(activeTrack, 0) : null,
-    );
+    let albumCover: string | null = $derived(generateTrackItemAlbumCoverUrl(activeTrack));
+    let artistImage: string | null = $derived(generateTrackItemArtistImageUrl(activeTrack));
 
     // flicker animation
     const flickerFPS = 24;

@@ -9,7 +9,7 @@
     import SideBar from "./lib/side-bar/SideBar.svelte";
 
     // api
-    import { API_URL } from "./lib/api/consts";
+    import { API_URL } from "./lib/api/Consts";
     import { getAllTrackItem, generateTrackItemAudioUrl } from "./lib/api/TrackItems";
     import type { TrackItem } from "./lib/api/Types";
     import PocketBase from "pocketbase";
@@ -37,7 +37,7 @@
     let currTimeUpdated: boolean = $state(false);
 
     onMount(async () => {
-        tracks = await getAllTrackItem(pb);
+        tracks = await getAllTrackItem();
     });
 
     // go to the next track when the current track ends

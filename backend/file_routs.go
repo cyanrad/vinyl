@@ -115,6 +115,41 @@ func serveTrackCoverImage(db *db.Queries) echo.HandlerFunc {
 	}
 }
 
+func serveTrackAudio(db *db.Queries) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		// getting track ID
+		idStr := c.Param("id")
+
+		// converting id to int
+		id, err := strconv.ParseInt(idStr, 10, 64)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusNotFound, "Track id "+idStr+" is not valid")
+		}
+
+		// getting track item
+		trackItem, err := db.GetTrackItemById(context.Background(), id)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusNotFound, "Track id "+idStr+" cannot be found")
+		}
+
+		// getting track cover file path
+		artistNames := util.GenerateArtistNames(trackItem.ArtistNames)
+		path, exists := checkIfAudioExists(util.GenerateTrackName(trackItem.Title, artistNames, trackItem.AlbumName))
+		if !exists {
+			return echo.NewHTTPError(http.StatusNotFound, "Audio not found")
+		}
+
+		// Log the request
+		log.Printf("Serving track audio: %s to %s", path, c.RealIP())
+
+		// Set appropriate headers
+		c.Response().Header().Set("Cache-Control", "public, max-age=3600")
+
+		// Serve the file
+		return c.File(path)
+	}
+}
+
 func getTrackCoverFilePath(trackItem db.GetTrackItemByIdRow) (string, bool) {
 	artistName := strings.Split(trackItem.ArtistNames, ",")[0]
 
@@ -157,4 +192,18 @@ func checkIfImageExists(resourceType ingestion.IngestionType, resourceName strin
 	}
 
 	return "", false
+}
+
+func checkIfAudioExists(resourceName string) (string, bool) {
+	// Construct file path
+	filePath := filepath.Join("../music/audio", resourceName+".mp3")
+	fmt.Println(filePath)
+
+	// Check if file exists
+	_, err := os.Stat(filePath)
+	if err != nil {
+		return "", false
+	}
+
+	return filePath, true
 }

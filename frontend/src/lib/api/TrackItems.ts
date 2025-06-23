@@ -1,57 +1,40 @@
-import { ALBUMS_COLLECTION, ARTISTS_COLLECTION, TRACKS_COLLECTION } from "./consts";
-import type { Artist, TrackItem } from "./Types";
+import type { TrackItem } from "./Types";
+import { TRACK_ITEMS_RESOURCE, API_URL, ALBUMS_RESOURCE, ARTISTS_RESOURCE, TRACKS_RESOURCE } from "./Consts";
 import { generateFileUrl } from "./Util";
-import type PocketBase from "pocketbase";
 
-export async function getAllTrackItem(pb: PocketBase) {
-    const items = await pb.collection(TRACKS_COLLECTION).getFullList({
-        expand: "album,artists",
-    });
+export async function getAllTrackItem(): Promise<TrackItem[]> {
+    const response = await fetch(API_URL + "/" + TRACK_ITEMS_RESOURCE);
 
-    const trackItems: TrackItem[] = items.map((track) => {
-        const artists = track.expand?.artists || [];
-        const album = track.expand?.album;
+    if (!response.ok) {
+        throw new Error(`fetching track items failed: ${response.status}`);
+    }
 
-        return {
-            // track
-            title: track.title,
-            description: track.description,
-            audio: track.audio,
-            cover: track.cover,
-            tags: track.tags,
+    const items = await response.json();
 
-            // album
-            albumTitle: album?.title,
-            albumCover: album?.cover,
+    // converting artsitIds & Names from string of an array to JSON array
+    const processedData = items.map((item: any) => ({
+        ...item,
+        artistNames: typeof item.artistNames === "string" ? JSON.parse(item.artistNames) : item.artistNames,
+        artistIds: typeof item.artistIds === "string" ? JSON.parse(item.artistIds) : item.artistIds,
+    })) as TrackItem[];
 
-            // artists
-            artistNames: artists.map((artist: Artist) => artist.name),
-            artistImages: artists.map((artist: Artist) => artist.image),
-
-            // ids
-            trackId: track.id,
-            albumId: album?.id,
-            artistIds: artists.map((artist: Artist) => artist.id),
-        };
-    });
-
-    return trackItems;
+    return processedData;
 }
 
-export function generateTrackItemCoverUrl(trackItem: TrackItem): string | null {
-    return trackItem.cover ? generateFileUrl(TRACKS_COLLECTION, trackItem.trackId, trackItem.cover) : null;
+export function generateTrackItemAlbumCoverUrl(item: TrackItem): string | null {
+    if (item.albumId === null) return null;
+
+    return generateFileUrl(ALBUMS_RESOURCE, item.albumId);
 }
 
-export function generateTrackItemAudioUrl(trackItem: TrackItem): string {
-    return generateFileUrl(TRACKS_COLLECTION, trackItem.trackId, trackItem.audio);
+export function generateTrackItemArtistImageUrl(item: TrackItem): string {
+    return generateFileUrl(ARTISTS_RESOURCE, item.artistIds[0]);
 }
 
-export function generateTrackItemAlbumCoverUrl(trackItem: TrackItem): string | null {
-    return trackItem.albumCover ? generateFileUrl(ALBUMS_COLLECTION, trackItem.albumId, trackItem.albumCover) : null;
+export function generateTrackItemCoverUrl(item: TrackItem): string {
+    return generateFileUrl(TRACKS_RESOURCE, item.trackId);
 }
 
-export function generateTrackItemArtistImageUrl(trackItem: TrackItem, index: number): string | null {
-    return trackItem.artistImages[index]
-        ? generateFileUrl(ARTISTS_COLLECTION, trackItem.artistIds[index], trackItem.artistImages[index])
-        : null;
+export function generateTrackItemAudioUrl(item: TrackItem): string {
+    return `${API_URL}/tracks/${item.trackId}/audio`;
 }

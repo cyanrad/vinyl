@@ -1,7 +1,7 @@
-import { API_URL } from "./consts";
+import { API_URL } from "./Consts";
 
-function generateFileUrl(collection: string, id: string, filename: string): string {
-    return `${API_URL}/api/files/${collection}/${id}/${filename}`;
+function generateFileUrl(resourceType: string, id: string): string {
+    return `${API_URL}/${resourceType}/${id}/image`;
 }
 
 export { generateFileUrl };

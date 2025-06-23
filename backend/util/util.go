@@ -2,6 +2,10 @@
 // contains general utility functionality
 package util
 
+import (
+	"strings"
+)
+
 const SEP = " - "
 
 func GenerateTrackName(trackName string, artistName string, albumName *string) string {
@@ -16,4 +20,12 @@ func GenerateTrackName(trackName string, artistName string, albumName *string) s
 
 func GenerateAlbumName(artistName string, albumName string) string {
 	return artistName + SEP + albumName
+}
+
+func GenerateArtistNames(artistNames string) string {
+	if artistNames[0] != '[' {
+		return artistNames
+	}
+
+	return strings.Join(strings.Split(artistNames[1:len(artistNames)-2], ","), " & ")
 }

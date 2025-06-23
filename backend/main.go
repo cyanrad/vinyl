@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -37,12 +38,16 @@ func main() {
 	fmt.Println(trackItems)
 
 	e := echo.New()
+	e.Use(middleware.CORS())
+
 	e.GET("/track-items", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, trackItems)
 	})
 
-	e.GET("/tracks/:id/cover", serveTrackCoverImage(queries))
-	e.GET("/artists/:id/cover", serveArtistImage(queries))
+	e.GET("/tracks/:id/image", serveTrackCoverImage(queries))
+	e.GET("/tracks/:id/audio", serveTrackAudio(queries))
+	e.GET("/album/:id/image", serveAlbumImage(queries))
+	e.GET("/artists/:id/image", serveArtistImage(queries))
 
 	e.Logger.Fatal(e.Start(":8080"))
 }

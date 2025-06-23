@@ -1,10 +1,10 @@
 -- name: GetAllTrackItems :many
-SELECT  t.id                         AS track_id,
+SELECT  t.id                        AS track_id,
         t.title,
-        al.id                        AS album_id,
-        al.name                      AS album_name,
-        GROUP_CONCAT(ar.id, ',')     AS artist_ids,
-        GROUP_CONCAT(ar.name, ',')   AS artist_names
+        al.id                       AS album_id,
+        al.name                     AS album_name,
+        JSON_GROUP_ARRAY(ar.id)     AS artist_ids,
+        JSON_GROUP_ARRAY(ar.name)   AS artist_names
   FROM  tracks AS t
   JOIN  tracks_artists AS tar         ON t.id = tar.track_id
   JOIN  artists AS ar                 ON tar.artist_id = ar.id

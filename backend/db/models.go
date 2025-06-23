@@ -12,7 +12,7 @@ type Album struct {
 	ID          int64     `json:"id"`
 	Name        string    `json:"name"`
 	Description *string   `json:"description"`
-	CreatedAt   time.Time `json:"created_at"`
+	CreatedAt   time.Time `json:"createdAt"`
 }
 
 type Artist struct {
@@ -20,19 +20,19 @@ type Artist struct {
 	Name        string    `json:"name"`
 	Description *string   `json:"description"`
 	Links       string    `json:"links"`
-	CreatedAt   time.Time `json:"created_at"`
+	CreatedAt   time.Time `json:"createdAt"`
 }
 
 type ArtistsAlbum struct {
-	ArtistID int64 `json:"artist_id"`
-	AlbumID  int64 `json:"album_id"`
+	ArtistID int64 `json:"artistId"`
+	AlbumID  int64 `json:"albumId"`
 }
 
 type Playlist struct {
 	ID          int64     `json:"id"`
 	Name        string    `json:"name"`
 	Description *string   `json:"description"`
-	CreatedAt   time.Time `json:"created_at"`
+	CreatedAt   time.Time `json:"createdAt"`
 }
 
 type Track struct {
@@ -40,23 +40,23 @@ type Track struct {
 	Title       string    `json:"title"`
 	Description *string   `json:"description"`
 	Tags        *string   `json:"tags"`
-	CreatedAt   time.Time `json:"created_at"`
+	CreatedAt   time.Time `json:"createdAt"`
 }
 
 type TracksAlbum struct {
-	TrackID int64 `json:"track_id"`
-	AlbumID int64 `json:"album_id"`
+	TrackID int64 `json:"trackId"`
+	AlbumID int64 `json:"albumId"`
 	Rank    int64 `json:"rank"`
 }
 
 type TracksArtist struct {
-	TrackID  int64 `json:"track_id"`
-	ArtistID int64 `json:"artist_id"`
+	TrackID  int64 `json:"trackId"`
+	ArtistID int64 `json:"artistId"`
 	Rank     int64 `json:"rank"`
 }
 
 type TracksPlaylist struct {
-	TrackID    int64 `json:"track_id"`
-	PlaylistID int64 `json:"playlist_id"`
+	TrackID    int64 `json:"trackId"`
+	PlaylistID int64 `json:"playlistId"`
 	Rank       int64 `json:"rank"`
 }
