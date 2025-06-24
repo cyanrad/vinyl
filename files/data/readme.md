@@ -5,8 +5,11 @@ In this directory you can add the data files for your artists, tracks, albums, e
 ## Artists
 
 `artists.json`: Contains a list of artists with their details.
+
 `name` of the artist
+
 `description(optional)` of who the artist is and what genre they work in
+
 `links(optional)` currently spotify, soundcloud, & personal are implemented
 
 ```json
@@ -26,8 +29,11 @@ In this directory you can add the data files for your artists, tracks, albums, e
 ## Tracks
 
 `tracks.json`: Contains a list of tracks with their details.
+
 `title` of the track
+
 `artist(list)` list of the artists who worked on the track. **Must be present in `artists.json`**
+
 `tags(optional list)` to categorise the track
 
 ```json
