@@ -4,6 +4,6 @@ generate-db:
 	sqlc generate
 
 reset-db:
-	rm -f database.db
+	rm -f ../files/database.db
 	make generate-db
-	sqlite3 database.db < schema/schema.sql
+	sqlite3 ../files/database.db < schema/schema.sql

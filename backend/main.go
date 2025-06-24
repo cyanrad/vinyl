@@ -12,11 +12,13 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-const MediaPath string = "../music/"
+// TODO: make this dynamic using an env
+const MediaPath string = "../files/"
+const DatabasePath string = MediaPath + "database.db"
 
 func main() {
 	fmt.Println("Starting...")
-	conn, err := sql.Open("sqlite3", "database.db")
+	conn, err := sql.Open("sqlite3", DatabasePath)
 	if err != nil {
 		panic(err)
 	}
@@ -26,6 +28,7 @@ func main() {
 	queries := db.New(conn)
 	fmt.Println("Connected to database")
 
+	// TODO: make this a command line option
 	// engine := ingestion.NewEngine("../music/data", queries)
 	// engine.IngestAndCreateData()
 
@@ -39,6 +42,8 @@ func main() {
 
 	e := echo.New()
 	e.Use(middleware.CORS())
+
+	e.Static("/", MediaPath+"dist")
 
 	e.GET("/track-items", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, trackItems)

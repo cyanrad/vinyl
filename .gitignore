@@ -6,4 +6,5 @@
 *.gif
 
 # data files
-/music/data/*.json
+/files/data/*.json
+/files/dist
