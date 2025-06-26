@@ -53,6 +53,21 @@ func (e *Engine) IngestTracks() ([]TrackIngestion, error) {
 	return tracks, nil
 }
 
+func (e *Engine) IngestAlbums() ([]AlbumIngestion, error) {
+	albumData, err := os.ReadFile(e.dataPath + "/" + string(ALBUMS) + ".json")
+	if err != nil {
+		return nil, err
+	}
+
+	var albums []AlbumIngestion
+	err = json.Unmarshal(albumData, &albums)
+	if err != nil {
+		return nil, err
+	}
+
+	return albums, nil
+}
+
 func (e *Engine) IngestAndCreateData() error {
 	artists, err := e.IngestArtists()
 	if err != nil {
@@ -64,7 +79,17 @@ func (e *Engine) IngestAndCreateData() error {
 		return err
 	}
 
+	albums, err := e.IngestAlbums()
+	if err != nil {
+		return err
+	}
+
 	err = e.CreateArtists(artists)
+	if err != nil {
+		return err
+	}
+
+	err = e.CreateAlbums(albums)
 	if err != nil {
 		return err
 	}

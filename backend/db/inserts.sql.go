@@ -9,8 +9,8 @@ import (
 	"context"
 )
 
-const createAlbum = `-- name: CreateAlbum :exec
-INSERT INTO albums (name, description) VALUES (?, ?)
+const createAlbum = `-- name: CreateAlbum :one
+INSERT INTO albums (name, description) VALUES (?, ?) RETURNING id, name, description, created_at
 `
 
 type CreateAlbumParams struct {
@@ -18,9 +18,16 @@ type CreateAlbumParams struct {
 	Description *string `json:"description"`
 }
 
-func (q *Queries) CreateAlbum(ctx context.Context, arg CreateAlbumParams) error {
-	_, err := q.db.ExecContext(ctx, createAlbum, arg.Name, arg.Description)
-	return err
+func (q *Queries) CreateAlbum(ctx context.Context, arg CreateAlbumParams) (Album, error) {
+	row := q.db.QueryRowContext(ctx, createAlbum, arg.Name, arg.Description)
+	var i Album
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Description,
+		&i.CreatedAt,
+	)
+	return i, err
 }
 
 const createArtist = `-- name: CreateArtist :exec

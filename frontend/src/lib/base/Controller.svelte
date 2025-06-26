@@ -3,6 +3,7 @@
     import { getMovedAudioTime } from "../Audio";
 
     let {
+        nextTrackSignal = $bindable(),
         playerState = $bindable(),
         currentTime = $bindable(),
         currTimeUpdated = $bindable(),
@@ -55,7 +56,13 @@
 
 <div class="flex flex-row items-center justify-between" style="width: {controllerWidth}px">
     <!-- preivous track -->
-    <button class="relative inline-block cursor-pointer" style="width: {buttonSize}px">
+    <button
+        class="relative inline-block cursor-pointer"
+        style="width: {buttonSize}px"
+        onclick={() => {
+            nextTrackSignal = -1;
+        }}
+    >
         <img
             draggable="false"
             src={previousTrackInactiveImage}
@@ -145,7 +152,13 @@
     </button>
 
     <!-- next track -->
-    <button class="relative inline-block cursor-pointer" style="width: {buttonSize}px">
+    <button
+        class="relative inline-block cursor-pointer"
+        style="width: {buttonSize}px"
+        onclick={() => {
+            nextTrackSignal = 1;
+        }}
+    >
         <img
             draggable="false"
             src={nextTrackInactiveImage}

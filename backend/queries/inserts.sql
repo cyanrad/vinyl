@@ -4,8 +4,8 @@ INSERT INTO tracks (title, description, tags) VALUES (?, ?, ?) RETURNING *;
 -- name: CreateArtist :exec
 INSERT INTO artists (name, description, links) VALUES (?, ?, ?);
 
--- name: CreateAlbum :exec
-INSERT INTO albums (name, description) VALUES (?, ?);
+-- name: CreateAlbum :one
+INSERT INTO albums (name, description) VALUES (?, ?) RETURNING *;
 
 -- name: CreatePlaylist :exec
 INSERT INTO playlists (name, description) VALUES (?, ?);

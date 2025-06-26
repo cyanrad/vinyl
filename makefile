@@ -10,6 +10,10 @@ build-win:
 	export GOARCH=amd64
 	cd ./backend && go build -o ../vinyl.exe
 
+reset-db:
+	rm -f ./files/database.db
+	sqlite3 ./files/database.db < ./backend/schema/schema.sql
+
 build-lin:
 # clear build files if exists 
 	rm -rf ./files/dist

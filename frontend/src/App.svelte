@@ -28,6 +28,7 @@
 
     // active track
     let activeTrackIndex: number | null = $state(null);
+    let nextTrackSignal: number = $state(0);
     let activeTrack: TrackItem | null = $derived(activeTrackIndex !== null ? tracks[activeTrackIndex] : null);
 
     // active audio
@@ -38,6 +39,20 @@
 
     onMount(async () => {
         tracks = await getAllTrackItem();
+    });
+
+    // next track signal indicates a next/prev track button click
+    $effect(() => {
+        if (audio === null || activeTrack === null || activeTrackIndex === null) return;
+
+        let newIndex = activeTrackIndex + nextTrackSignal;
+        if (newIndex >= 0 && newIndex < tracks.length) {
+            activeTrackIndex = newIndex;
+        }
+
+        untrack(() => {
+            nextTrackSignal = 0;
+        });
     });
 
     // go to the next track when the current track ends
@@ -71,6 +86,7 @@
             currTimeUpdated = true;
         });
 
+        // TODO: this is not enough for generation of audio, search of a better check
         audio = new Audio(generateTrackItemAudioUrl(activeTrack));
 
         playerState = PlayerState.Playing;
@@ -96,7 +112,15 @@
 <main>
     <SideBar {tracks} bind:activeTrackIndex />
     <div class="flex items-center justify-center h-screen w-screen fixed inset-0">
-        <Base {activeTrack} {duration} bind:playerState bind:audio bind:currentTime bind:currTimeUpdated />
+        <Base
+            {activeTrack}
+            {duration}
+            bind:nextTrackSignal
+            bind:playerState
+            bind:audio
+            bind:currentTime
+            bind:currTimeUpdated
+        />
     </div>
 </main>
 

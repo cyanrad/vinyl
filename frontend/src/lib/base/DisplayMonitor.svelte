@@ -9,7 +9,7 @@
     // text
     let trackTitle: string = $derived(activeTrack?.title || "");
     let artistName: string = $derived(activeTrack?.artistNames[0] || "");
-    let albumTitle: string = $derived(activeTrack?.albumTitle || "404\nNo Album\n:D");
+    let albumTitle: string = $derived(activeTrack?.albumName || "404\nNo Album\n:D");
 
     let playerStateText: string = $derived.by(() => {
         if (!audio) return "NO TRACK SELECTED :[";
@@ -29,23 +29,43 @@
     let currentOpacity = $state(0);
 
     // text sizes
-    const textSize = $derived.by(() => {
+    const trackTextSize = $derived.by(() => {
         if (!trackTitle) return "text-md";
 
-        if (trackTitle.length >= 90) {
+        let lw = longestWordLength(trackTitle);
+        if (trackTitle.length >= 90 || lw > 16) {
             return "text-xs";
-        } else if (trackTitle.length > 70) {
+        } else if (trackTitle.length > 70 || lw > 15) {
             return "text-sm";
-        } else if (trackTitle.length > 40) {
+        } else if (trackTitle.length > 40 || lw > 13) {
             return "text-md";
-        } else if (trackTitle.length > 30) {
+        } else if (trackTitle.length > 30 || lw > 11) {
             return "text-lg";
-        } else if (trackTitle.length > 20) {
+        } else if (trackTitle.length > 20 || lw > 7) {
             return "text-xl";
         } else {
             return "text-3xl";
         }
     });
+    const aritstTextSize = $derived(sideTextSize(artistName));
+    const albumTextSize = $derived(sideTextSize(albumCover));
+
+    function sideTextSize(text: string | null): string {
+        if (!text) return "text-sm";
+
+        let lw = longestWordLength(text);
+        if (text.length > 20 || lw >= 11) {
+            return "text-xs";
+        } else if (text.length > 18 || lw == 10) {
+            return "text-sm";
+        } else if (text.length > 16 || lw >= 8) {
+            return "text-md";
+        } else if (text.length > 14 || lw >= 7) {
+            return "text-lg";
+        } else {
+            return "text-xl";
+        }
+    }
 
     // random bell number generator
     // taken from https://stackoverflow.com/a/49434653
@@ -65,6 +85,10 @@
             num += flickerOpacityMin; // offset to min
         }
         return num;
+    }
+
+    function longestWordLength(text: string): number {
+        return Math.max(...text.split(" ").map((word) => word.length));
     }
 
     // random changing the opacity of the monitor to create a flickering effect
@@ -91,7 +115,7 @@
     <div class="absolute w-full h-full flex flex-col p-2 text-center">
         <!-- Heading -->
         <span
-            class="crt-text text-emerald-200 text-lg h-[15%]"
+            class="crt-text text-emerald-200 text-lg h-[15%] text-center"
             style="opacity: {currentOpacity + textFlickerModifier}; font-family: 'PerfectDosVga', sans-serif;"
         >
             {playerStateText}
@@ -111,7 +135,7 @@
                     <div class="h-2"></div>
 
                     <span
-                        class="crt-text-bounce text-emerald-200 text-sm w-[80%]"
+                        class="crt-text-bounce text-emerald-200 {aritstTextSize} w-[80%]"
                         style="opacity: {currentOpacity +
                             textFlickerModifier}; font-family: 'PerfectDosVga', sans-serif;"
                     >
@@ -121,7 +145,7 @@
 
                 <!-- Track Name -->
                 <span
-                    class="crt-text text-emerald-200 w-[40%] {textSize}"
+                    class="crt-text text-emerald-200 w-[40%] {trackTextSize}"
                     style="opacity: {currentOpacity + textFlickerModifier}; font-family: 'PerfectDosVga', sans-serif;"
                 >
                     {trackTitle}
@@ -140,7 +164,7 @@
                     {/if}
 
                     <span
-                        class="crt-text-bounce-delayed text-emerald-200 text-sm w-[80%] self-end"
+                        class="crt-text-bounce-delayed text-emerald-200 {albumTextSize} w-[80%] self-end text-center"
                         style="opacity: {currentOpacity +
                             textFlickerModifier}; font-family: 'PerfectDosVga', sans-serif;"
                     >

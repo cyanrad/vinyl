@@ -22,10 +22,11 @@ func GenerateAlbumName(artistName string, albumName string) string {
 	return artistName + SEP + albumName
 }
 
-func GenerateArtistNames(artistNames string) string {
-	if artistNames[0] != '[' {
-		return artistNames
-	}
+func GenerateConcatNames(names []string) string {
+	return strings.Join(names, " & ")
+}
 
-	return strings.Join(strings.Split(artistNames[1:len(artistNames)-2], ","), " & ")
+// JSONArrToStrArr converts "["str1", "str2", ...]" -> []string{"str1", "str2", ...}
+func JSONArrToStrArr(jsonArr string) []string {
+	return strings.Split(strings.ReplaceAll(strings.Trim(jsonArr, "[]"), "\"", ""), ",")
 }

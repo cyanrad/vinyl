@@ -33,7 +33,7 @@
 
         <!-- info bar -->
         {#if isSideBarOpen}
-            <div class="relative h-full z-10" transition:fly={{ x: -infoBarWidth, duration: 300 }}>
+            <div class="relative h-full z-10" transition:fly={{ x: -infoBarWidth, duration: 300, opacity: 50 }}>
                 <!-- outer -->
                 <div
                     class="absolute top-0 left-0 h-full bg-zinc-700 rounded-r-xl"

@@ -13,8 +13,10 @@ import (
 )
 
 // TODO: make this dynamic using an env
-const MediaPath string = "../files/"
-const DatabasePath string = MediaPath + "database.db"
+const (
+	MediaPath    string = "../files/"
+	DatabasePath string = MediaPath + "database.db"
+)
 
 func main() {
 	fmt.Println("Starting...")
@@ -29,7 +31,7 @@ func main() {
 	fmt.Println("Connected to database")
 
 	// TODO: make this a command line option
-	// engine := ingestion.NewEngine("../music/data", queries)
+	// engine := ingestion.NewEngine(MediaPath+"data", queries)
 	// engine.IngestAndCreateData()
 
 	fmt.Println("Getting all track items...")
@@ -51,7 +53,7 @@ func main() {
 
 	e.GET("/tracks/:id/image", serveTrackCoverImage(queries))
 	e.GET("/tracks/:id/audio", serveTrackAudio(queries))
-	e.GET("/album/:id/image", serveAlbumImage(queries))
+	e.GET("/albums/:id/image", serveAlbumImage(queries))
 	e.GET("/artists/:id/image", serveArtistImage(queries))
 
 	e.Logger.Fatal(e.Start(":8080"))

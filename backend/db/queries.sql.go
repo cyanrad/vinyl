@@ -7,33 +7,66 @@ package db
 
 import (
 	"context"
+	"time"
 )
 
 const getAlbumById = `-- name: GetAlbumById :one
-SELECT  a.id, a.name, a.description, a.created_at
-  FROM  albums a
- WHERE  a.id = ?
+SELECT  al.id,
+        al.name,
+        al.description,
+        al.created_at,
+        GROUP_CONCAT(ar.id, ',')     AS artist_ids,
+        GROUP_CONCAT(ar.name, ',')   AS artist_names
+  FROM  albums al
+  LEFT  JOIN artists_albums aa  ON al.id = aa.album_id
+  LEFT  JOIN artists ar         ON aa.artist_id = ar.id
+ WHERE  al.id = ?
+ GROUP  BY 1,2,3,4
 `
 
-func (q *Queries) GetAlbumById(ctx context.Context, id int64) (Album, error) {
+type GetAlbumByIdRow struct {
+	ID          int64     `json:"id"`
+	Name        string    `json:"name"`
+	Description *string   `json:"description"`
+	CreatedAt   time.Time `json:"createdAt"`
+	ArtistIds   string    `json:"artistIds"`
+	ArtistNames string    `json:"artistNames"`
+}
+
+func (q *Queries) GetAlbumById(ctx context.Context, id int64) (GetAlbumByIdRow, error) {
 	row := q.db.QueryRowContext(ctx, getAlbumById, id)
-	var i Album
+	var i GetAlbumByIdRow
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
 		&i.Description,
 		&i.CreatedAt,
+		&i.ArtistIds,
+		&i.ArtistNames,
 	)
 	return i, err
 }
 
+const getAlbumByName = `-- name: GetAlbumByName :one
+SELECT  a.id
+  FROM  albums a
+ WHERE  a.name = ?
+`
+
+func (q *Queries) GetAlbumByName(ctx context.Context, name string) (int64, error) {
+	row := q.db.QueryRowContext(ctx, getAlbumByName, name)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
 const getAllTrackItems = `-- name: GetAllTrackItems :many
-SELECT  t.id                        AS track_id,
+SELECT  t.id                                       AS track_id,
         t.title,
-        al.id                       AS album_id,
-        al.name                     AS album_name,
-        JSON_GROUP_ARRAY(ar.id)     AS artist_ids,
-        JSON_GROUP_ARRAY(ar.name)   AS artist_names
+        al.id                                      AS album_id,
+        al.name                                    AS album_name,
+        CAST(JSON_GROUP_ARRAY(ar.id) AS TEXT)      AS artist_ids,
+        CAST(JSON_GROUP_ARRAY(ar.name) AS TEXT)    AS artist_names
   FROM  tracks AS t
   JOIN  tracks_artists AS tar         ON t.id = tar.track_id
   JOIN  artists AS ar                 ON tar.artist_id = ar.id
@@ -44,12 +77,12 @@ SELECT  t.id                        AS track_id,
 `
 
 type GetAllTrackItemsRow struct {
-	TrackID     int64       `json:"trackId"`
-	Title       string      `json:"title"`
-	AlbumID     *int64      `json:"albumId"`
-	AlbumName   *string     `json:"albumName"`
-	ArtistIds   interface{} `json:"artistIds"`
-	ArtistNames interface{} `json:"artistNames"`
+	TrackID     int64   `json:"trackId"`
+	Title       string  `json:"title"`
+	AlbumID     *int64  `json:"albumId"`
+	AlbumName   *string `json:"albumName"`
+	ArtistIds   string  `json:"artistIds"`
+	ArtistNames string  `json:"artistNames"`
 }
 
 func (q *Queries) GetAllTrackItems(ctx context.Context) ([]GetAllTrackItemsRow, error) {
@@ -115,12 +148,12 @@ func (q *Queries) GetArtistByName(ctx context.Context, name string) (int64, erro
 }
 
 const getTrackItemById = `-- name: GetTrackItemById :one
-SELECT  t.id                         AS track_id,
+SELECT  t.id                                       AS track_id,
         t.title,
-        al.id                        AS album_id,
-        al.name                      AS album_name,
-        GROUP_CONCAT(ar.id, ',')     AS artist_ids,
-        GROUP_CONCAT(ar.name, ',')   AS artist_names
+        al.id                                      AS album_id,
+        al.name                                    AS album_name,
+        CAST(JSON_GROUP_ARRAY(ar.id) AS TEXT)      AS artist_ids,
+        CAST(JSON_GROUP_ARRAY(ar.name) AS TEXT)    AS artist_names
   FROM  tracks AS t
   JOIN  tracks_artists AS tar         ON t.id = tar.track_id
   JOIN  artists AS ar                 ON tar.artist_id = ar.id

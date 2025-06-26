@@ -11,7 +11,6 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"strings"
 
 	"github.com/labstack/echo/v4"
 )
@@ -66,7 +65,9 @@ func serveAlbumImage(db *db.Queries) echo.HandlerFunc {
 		}
 
 		// getting album image path
-		path, exists := checkIfImageExists(ingestion.ALBUMS, album.Name)
+		path, exists := checkIfImageExists(ingestion.ALBUMS,
+			util.GenerateAlbumName(album.ArtistNames, album.Name))
+
 		if !exists {
 			return echo.NewHTTPError(http.StatusNotFound, "Album not found")
 		}
@@ -133,7 +134,7 @@ func serveTrackAudio(db *db.Queries) echo.HandlerFunc {
 		}
 
 		// getting track cover file path
-		artistNames := util.GenerateArtistNames(trackItem.ArtistNames)
+		artistNames := util.GenerateConcatNames(util.JSONArrToStrArr(trackItem.ArtistNames))
 		path, exists := checkIfAudioExists(util.GenerateTrackName(trackItem.Title, artistNames, trackItem.AlbumName))
 		if !exists {
 			return echo.NewHTTPError(http.StatusNotFound, "Audio not found")
@@ -151,7 +152,7 @@ func serveTrackAudio(db *db.Queries) echo.HandlerFunc {
 }
 
 func getTrackCoverFilePath(trackItem db.GetTrackItemByIdRow) (string, bool) {
-	artistName := strings.Split(trackItem.ArtistNames, ",")[0]
+	artistName := util.GenerateConcatNames(util.JSONArrToStrArr(trackItem.ArtistNames))
 
 	// we attempt to find a cover for the track first, then ablum cover then artist image
 	// track cover
@@ -179,7 +180,7 @@ func getTrackCoverFilePath(trackItem db.GetTrackItemByIdRow) (string, bool) {
 func checkIfImageExists(resourceType ingestion.IngestionType, resourceName string) (string, bool) {
 	for _, extention := range []string{".png", ".jpg"} {
 		// Construct file path
-		filePath := filepath.Join("../music", string(resourceType), resourceName+extention)
+		filePath := filepath.Join(MediaPath, string(resourceType), resourceName+extention)
 		fmt.Println(filePath)
 
 		// Check if file exists
@@ -196,7 +197,7 @@ func checkIfImageExists(resourceType ingestion.IngestionType, resourceName strin
 
 func checkIfAudioExists(resourceName string) (string, bool) {
 	// Construct file path
-	filePath := filepath.Join("../music/audio", resourceName+".mp3")
+	filePath := filepath.Join(MediaPath, "audio", resourceName+".mp3")
 	fmt.Println(filePath)
 
 	// Check if file exists

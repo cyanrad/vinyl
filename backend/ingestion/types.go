@@ -11,6 +11,21 @@ const (
 	PLAYLISTS IngestionType = "playlists"
 )
 
+type TrackIngestion struct {
+	Title       string   `json:"title"`
+	Artists     []string `json:"artists"`
+	Album       *string  `json:"album,omitempty"`
+	AlbumRank   *int     `json:"albumRank,omitempty"`
+	Description *string  `json:"description,omitempty"`
+	Tags        []string `json:"tags"`
+}
+
+type AlbumIngestion struct {
+	Name        string   `json:"name"`
+	Artists     []string `json:"artists"`
+	Description *string  `json:"description,omitempty"`
+}
+
 type ArtistIngestion struct {
 	Name        string      `json:"name"`
 	Description *string     `json:"description,omitempty"`
@@ -29,12 +44,4 @@ func (a ArtistLinks) ToString() string {
 		return ""
 	}
 	return string(json)
-}
-
-type TrackIngestion struct {
-	Title       string   `json:"title"`
-	Artists     []string `json:"artists"`
-	Album       *string  `json:"album,omitempty"`
-	Description *string  `json:"description,omitempty"`
-	Tags        []string `json:"tags"`
 }

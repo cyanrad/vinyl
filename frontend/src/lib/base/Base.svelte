@@ -15,6 +15,7 @@
 
     let {
         activeTrack,
+        nextTrackSignal = $bindable(),
         duration,
         playerState = $bindable(),
         audio = $bindable(),
@@ -23,7 +24,7 @@
     } = $props();
 
     // audio variables
-    let volume: number = $state(0.5);
+    let volume: number = $state(0.05);
 
     // keyboard events
     onMount(async () => {
@@ -128,7 +129,7 @@
 
     <!-- controller -->
     <div class="absolute" style="top: {controllerTop}px; left: {controllerLeft}px;">
-        <Controller bind:playerState bind:currentTime bind:currTimeUpdated {duration} {audio} />
+        <Controller bind:playerState bind:currentTime bind:currTimeUpdated bind:nextTrackSignal {duration} {audio} />
     </div>
 
     <!-- scrubber -->

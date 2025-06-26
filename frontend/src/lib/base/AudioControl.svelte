@@ -1,5 +1,6 @@
 <script lang="ts">
     // audio variables
+    // TODO: add a number indicator/edit-field for volume
     let { volume = $bindable() } = $props();
 
     let audioScrubberElement: HTMLButtonElement | null = $state(null);
