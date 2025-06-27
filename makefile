@@ -1,7 +1,9 @@
 # clear build files if exists 
 clear-build:
 	rm -rf ./files/dist
+	rm -f ./vinyl
 	rm -f ./files/database.db
+	rm -f ./vinyl.exe
 
 build-frontend:
 	cd ./frontend && pnpm vite build --outDir ../files/dist/
@@ -14,9 +16,18 @@ build-all:
 	$(MAKE) build-frontend
 	$(MAKE) build-db
 
-build-backend:
-	rm -f ./vinyl
+build-backend-linux:
 	cd ./backend && go build -o ../vinyl
+
+# exporting doesn't seem to work with make file so we have to set env vars inline
+build-backend-windows:
+	cd ./backend && \
+		GOOS="windows" \
+		GOARCH="amd64" \
+		CGO_ENABLED="1"\
+		CC="x86_64-w64-mingw32-gcc" \
+		CXX="x86_64-w64-mingw32-g++" \
+		go build -o ../vinyl.exe
 
 clean-run:
 	$(MAKE) build-all
@@ -27,13 +38,15 @@ run:
 
 build-win:
 	$(MAKE) build-all
-	export GOOS=windows
-	export GOARCH=amd64
-	$(MAKE) build-backend
-	./vinyl -ingest
+# we can't use the output executable to ingest
+	$(MAKE) build-backend-windows
+	cd ./backend && go run . -ingest
 
 build-linux:
 	$(MAKE) build-all
-	$(MAKE) build-backend
+	$(MAKE) build-backend-linux
 	./vinyl -ingest
 
+# NOTE: this is used for dev and should not be used for prod
+bundle:
+	zip -r release.zip vinyl.exe files/
