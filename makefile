@@ -14,6 +14,10 @@ build-all:
 	$(MAKE) build-frontend
 	$(MAKE) build-db
 
+build-backend:
+	rm -f ./vinyl
+	cd ./backend && go build -o ../vinyl
+
 clean-run:
 	$(MAKE) build-all
 	cd ./backend && go run .
@@ -25,9 +29,11 @@ build-win:
 	$(MAKE) build-all
 	export GOOS=windows
 	export GOARCH=amd64
-	cd ./backend && go build -o ../vinyl.exe
+	$(MAKE) build-backend
+	./vinyl -ingest
 
-build-lin:
+build-linux:
 	$(MAKE) build-all
-	cd ./backend && go build -o ../vinyl
+	$(MAKE) build-backend
+	./vinyl -ingest
 

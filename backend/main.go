@@ -17,31 +17,49 @@ import (
 )
 
 func main() {
+	fmt.Println("Starting...")
+
 	// Loading environment configs like port and file paths
 	util.InitConfig()
 
-	fmt.Println("Starting...")
 	fmt.Println("Connecting to database...")
+	database := initDatabase()
+	defer database.Conn.Close()
+	fmt.Println("Connected to database")
+
+	if util.INGEST {
+		runIngestion(database.Queries)
+	} else {
+		runServer(database.Queries)
+	}
+}
+
+type databaseConn struct {
+	Conn    *sql.DB
+	Queries *db.Queries
+}
+
+func initDatabase() databaseConn {
 	conn, err := sql.Open("sqlite3", util.DATABASE_PATH)
 	if err != nil {
 		panic(err)
 	}
-	defer conn.Close()
 
 	queries := db.New(conn)
-	fmt.Println("Connected to database")
+	return databaseConn{
+		Conn:    conn,
+		Queries: queries,
+	}
+}
 
-	// TODO: make this a command line option
+func runIngestion(queries *db.Queries) {
 	engine := ingestion.NewEngine(queries)
 	engine.IngestAndCreateData()
+}
 
-	fmt.Println("Getting all track items...")
-	trackItems, err := queries.GetAllTrackItems(context.Background())
-	if err != nil {
-		log.Fatal(err)
-	}
-
+func runServer(queries *db.Queries) {
 	e := echo.New()
+
 	// TODO: this should be updated with the server's domain at some point
 	e.Use(middleware.CORS())
 
@@ -51,6 +69,11 @@ func main() {
 	// Serving basically all the data.
 	// WARNING: this can become a bottleneck at large datasets, but currently it's not an issue
 	e.GET("/track-items", func(c echo.Context) error {
+		fmt.Println("Getting all track items...")
+		trackItems, err := queries.GetAllTrackItems(context.Background())
+		if err != nil {
+			log.Fatal(err)
+		}
 		return c.JSON(http.StatusOK, trackItems)
 	})
 

@@ -14,6 +14,9 @@ var (
 	DATABASE_PATH string
 	FRONTEND_PATH string
 	DATA_PATH     string
+
+	// MODE
+	INGEST bool
 )
 
 func InitConfig() {
@@ -27,7 +30,9 @@ func InitConfig() {
 	flag.StringVar(&relDataPath, "data-path", "data", "Resource JSON data directory path (relative to media-path)")
 	flag.StringVar(&relFrontendPath, "frontend-path", "dist", "Frontend dist path (relative to media-path)")
 
-	// Parse command line arguments
+	// ingestion and API usage should be seperate operations in the executable
+	flag.BoolVar(&INGEST, "ingest", false, "Runs ingestion mode where the data is inserted into the database file specificed by the database-path arg")
+
 	flag.Parse()
 
 	// Convert relative paths to absolute paths based on MediaPath
