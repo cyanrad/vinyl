@@ -1,13 +1,11 @@
 package ingestion
 
 type Cache struct {
-	cache    map[string]interface{}
-	dataPath string
+	cache map[string]interface{}
 }
 
-func NewCache(dataPath string) *Cache {
+func NewCache() *Cache {
 	return &Cache{
-		cache:    make(map[string]interface{}),
-		dataPath: dataPath,
+		cache: make(map[string]interface{}),
 	}
 }

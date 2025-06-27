@@ -1,27 +1,33 @@
-run:
+# clear build files if exists 
+clear-build:
 	rm -rf ./files/dist
+	rm -f ./files/database.db
+
+build-frontend:
 	cd ./frontend && pnpm vite build --outDir ../files/dist/
+
+build-db:
+	sqlite3 ./files/database.db < ./backend/schema/schema.sql
+
+build-all:
+	$(MAKE) clear-build
+	$(MAKE) build-frontend
+	$(MAKE) build-db
+
+clean-run:
+	$(MAKE) build-all
+	cd ./backend && go run .
+
+run:
 	cd ./backend && go run .
 
 build-win:
-	rm -rf ./files/dist
-	cd ./frontend && pnpm vite build --outDir ../files/dist/
+	$(MAKE) build-all
 	export GOOS=windows
 	export GOARCH=amd64
 	cd ./backend && go build -o ../vinyl.exe
 
-reset-db:
-	rm -f ./files/database.db
-	sqlite3 ./files/database.db < ./backend/schema/schema.sql
-
 build-lin:
-# clear build files if exists 
-	rm -rf ./files/dist
-	rm -f ./files/database.db
-
-# building frontend
-	cd ./frontend && pnpm vite build --outDir ../files/dist/
-
-# building backend 
-	sqlite3 ./files/database.db < ./backend/schema/schema.sql
+	$(MAKE) build-all
 	cd ./backend && go build -o ../vinyl
+

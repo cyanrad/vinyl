@@ -2,15 +2,6 @@ package ingestion
 
 import "encoding/json"
 
-type IngestionType string
-
-const (
-	TRACKS    IngestionType = "tracks"
-	ARTISTS   IngestionType = "artists"
-	ALBUMS    IngestionType = "albums"
-	PLAYLISTS IngestionType = "playlists"
-)
-
 type TrackIngestion struct {
 	Title       string   `json:"title"`
 	Artists     []string `json:"artists"`

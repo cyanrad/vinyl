@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"main/db"
-	"main/ingestion"
 	"main/util"
 	"net/http"
 	"os"
@@ -32,7 +31,7 @@ func serveArtistImage(db *db.Queries) echo.HandlerFunc {
 		}
 
 		// getting artist image path
-		path, exists := checkIfImageExists(ingestion.ARTISTS, artist.Name)
+		path, exists := checkIfImageExists(util.ARTISTS, artist.Name)
 		if !exists {
 			return echo.NewHTTPError(http.StatusNotFound, "Image not found")
 		}
@@ -65,7 +64,7 @@ func serveAlbumImage(db *db.Queries) echo.HandlerFunc {
 		}
 
 		// getting album image path
-		path, exists := checkIfImageExists(ingestion.ALBUMS,
+		path, exists := checkIfImageExists(util.ALBUMS,
 			util.GenerateAlbumName(album.ArtistNames, album.Name))
 
 		if !exists {
@@ -156,31 +155,31 @@ func getTrackCoverFilePath(trackItem db.GetTrackItemByIdRow) (string, bool) {
 
 	// we attempt to find a cover for the track first, then ablum cover then artist image
 	// track cover
-	if path, exists := checkIfImageExists(ingestion.TRACKS,
+	if path, exists := checkIfImageExists(util.TRACKS,
 		util.GenerateTrackName(trackItem.Title, artistName, trackItem.AlbumName)); exists {
 		return path, true
 	}
 
 	// album cover
 	if trackItem.AlbumName != nil {
-		if path, exists := checkIfImageExists(ingestion.ALBUMS,
+		if path, exists := checkIfImageExists(util.ALBUMS,
 			util.GenerateAlbumName(artistName, *trackItem.AlbumName)); exists {
 			return path, true
 		}
 	}
 
 	// artist Image
-	if path, exists := checkIfImageExists(ingestion.ARTISTS, artistName); exists {
+	if path, exists := checkIfImageExists(util.ARTISTS, artistName); exists {
 		return path, true
 	}
 
 	return "", false
 }
 
-func checkIfImageExists(resourceType ingestion.IngestionType, resourceName string) (string, bool) {
+func checkIfImageExists(resourceType util.ResourceType, resourceName string) (string, bool) {
 	for _, extention := range []string{".png", ".jpg"} {
 		// Construct file path
-		filePath := filepath.Join(MediaPath, string(resourceType), resourceName+extention)
+		filePath := filepath.Join(util.MEDIA_PATH, string(resourceType), resourceName+extention)
 		fmt.Println(filePath)
 
 		// Check if file exists
@@ -197,7 +196,7 @@ func checkIfImageExists(resourceType ingestion.IngestionType, resourceName strin
 
 func checkIfAudioExists(resourceName string) (string, bool) {
 	// Construct file path
-	filePath := filepath.Join(MediaPath, "audio", resourceName+".mp3")
+	filePath := filepath.Join(util.MEDIA_PATH, string(util.AUDIO), resourceName+".mp3")
 	fmt.Println(filePath)
 
 	// Check if file exists

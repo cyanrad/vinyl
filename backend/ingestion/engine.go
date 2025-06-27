@@ -5,26 +5,27 @@ package ingestion
 import (
 	"encoding/json"
 	"main/db"
+	"main/util"
 	"os"
+	"path/filepath"
 )
 
 type Engine struct {
-	cache    *Cache
-	queries  *db.Queries
-	dataPath string
+	cache   *Cache
+	queries *db.Queries
 }
 
-func NewEngine(dataPath string, queries *db.Queries) *Engine {
-	cache := NewCache(dataPath)
+func NewEngine(queries *db.Queries) *Engine {
+	cache := NewCache()
 	return &Engine{
-		cache:    cache,
-		queries:  queries,
-		dataPath: dataPath,
+		cache:   cache,
+		queries: queries,
 	}
 }
 
 func (e *Engine) IngestArtists() ([]ArtistIngestion, error) {
-	artistData, err := os.ReadFile(e.dataPath + "/" + string(ARTISTS) + ".json")
+	dataPath := filepath.Join(util.DATA_PATH, string(util.ARTISTS)+".json")
+	artistData, err := os.ReadFile(dataPath)
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +40,8 @@ func (e *Engine) IngestArtists() ([]ArtistIngestion, error) {
 }
 
 func (e *Engine) IngestTracks() ([]TrackIngestion, error) {
-	trackData, err := os.ReadFile(e.dataPath + "/" + string(TRACKS) + ".json")
+	dataPath := filepath.Join(util.DATA_PATH, string(util.TRACKS)+".json")
+	trackData, err := os.ReadFile(dataPath)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +56,8 @@ func (e *Engine) IngestTracks() ([]TrackIngestion, error) {
 }
 
 func (e *Engine) IngestAlbums() ([]AlbumIngestion, error) {
-	albumData, err := os.ReadFile(e.dataPath + "/" + string(ALBUMS) + ".json")
+	dataPath := filepath.Join(util.DATA_PATH, string(util.ALBUMS)+".json")
+	albumData, err := os.ReadFile(dataPath)
 	if err != nil {
 		return nil, err
 	}
