@@ -1,3 +1,6 @@
+generate-db:
+	cd ./backend && sqlc generate
+
 # clear build files if exists 
 clear-build:
 	rm -rf ./files/dist
@@ -19,7 +22,6 @@ build-all:
 build-backend-linux:
 	cd ./backend && go build -o ../vinyl
 
-# exporting doesn't seem to work with make file so we have to set env vars inline
 build-backend-windows:
 	cd ./backend && \
 		GOOS="windows" \
@@ -31,16 +33,17 @@ build-backend-windows:
 
 clean-run:
 	$(MAKE) build-all
-	cd ./backend && go run .
+	cd ./backend && go run . -media-path=../files -ingest -source=local
+	cd ./backend && go run . -media-path=../files
 
 run:
-	cd ./backend && go run .
+	cd ./backend && go run . -media-path=../files
 
-build-win:
+build-win-on-linux:
 	$(MAKE) build-all
 # we can't use the output executable to ingest
 	$(MAKE) build-backend-windows
-	cd ./backend && go run . -ingest
+	cd ./backend && go run . -ingest -source=local
 
 build-linux:
 	$(MAKE) build-all

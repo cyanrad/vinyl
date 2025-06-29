@@ -27,10 +27,11 @@ func main() {
 	defer database.Conn.Close()
 	fmt.Println("Connected to database")
 
+	ctx := context.Background()
 	if util.INGEST {
-		runIngestion(database.Queries)
+		runIngestion(ctx, database.Queries)
 	} else {
-		runServer(database.Queries)
+		runServer(ctx, database.Queries)
 	}
 }
 
@@ -52,12 +53,22 @@ func initDatabase() databaseConn {
 	}
 }
 
-func runIngestion(queries *db.Queries) {
+func runIngestion(ctx context.Context, queries *db.Queries) {
 	engine := ingestion.NewEngine(queries)
-	engine.IngestAndCreateData()
+
+	switch util.SOURCE {
+	case util.SOURCE_LOCAL:
+		log.Println("Ingesting local data")
+		engine.IngestAndCreateData()
+	case util.SOURCE_SPOTIFY:
+		log.Println("Ingesting Spotify data")
+		engine.IngestSpotify(ctx, util.RESOURCE, util.RESOURCE_ID)
+	default:
+		panic("what the actual fuck")
+	}
 }
 
-func runServer(queries *db.Queries) {
+func runServer(ctx context.Context, queries *db.Queries) {
 	e := echo.New()
 
 	// TODO: this should be updated with the server's domain at some point
@@ -69,8 +80,8 @@ func runServer(queries *db.Queries) {
 	// Serving basically all the data.
 	// WARNING: this can become a bottleneck at large datasets, but currently it's not an issue
 	e.GET("/track-items", func(c echo.Context) error {
-		fmt.Println("Getting all track items...")
-		trackItems, err := queries.GetAllTrackItems(context.Background())
+		log.Println("Getting all track items...")
+		trackItems, err := queries.GetAllTrackItems(ctx)
 		if err != nil {
 			log.Fatal(err)
 		}

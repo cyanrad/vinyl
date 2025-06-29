@@ -3,6 +3,7 @@
 package util
 
 import (
+	"log"
 	"strings"
 )
 
@@ -35,4 +36,8 @@ func GenerateConcatNames(names []string) string {
 // JSONArrToStrArr converts "["str1", "str2", ...]" -> []string{"str1", "str2", ...}
 func JSONArrToStrArr(jsonArr string) []string {
 	return strings.Split(strings.ReplaceAll(strings.Trim(jsonArr, "[]"), "\"", ""), ",")
+}
+
+func LogProgress(current int, total int) {
+	log.Printf("completed(%d%%)\t%d/%d\n", int(float32(current)/float32(total)*100), current, total)
 }

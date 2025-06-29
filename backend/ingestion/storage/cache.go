@@ -1,4 +1,4 @@
-package ingestion
+package storage
 
 type Cache struct {
 	cache map[string]interface{}

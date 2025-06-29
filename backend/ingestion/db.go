@@ -3,12 +3,13 @@ package ingestion
 import (
 	"context"
 	"main/db"
+	"main/ingestion/storage"
 	"strings"
 )
 
 // TODO: in case an artist is mentioned that can't be traced back it show log the error but continue
 
-func (e *Engine) CreateTracks(tracks []TrackIngestion) error {
+func (e *Engine) CreateTracks(tracks []storage.TrackIngestion) error {
 	for _, track := range tracks {
 		artistIDs := []int64{}
 		for _, artist := range track.Artists {
@@ -72,7 +73,7 @@ func (e *Engine) CreateTracks(tracks []TrackIngestion) error {
 	return nil
 }
 
-func (e *Engine) CreateAlbums(albums []AlbumIngestion) error {
+func (e *Engine) CreateAlbums(albums []storage.AlbumIngestion) error {
 	for _, album := range albums {
 		artistIDs := []int64{}
 		for _, artist := range album.Artists {
@@ -106,7 +107,7 @@ func (e *Engine) CreateAlbums(albums []AlbumIngestion) error {
 	return nil
 }
 
-func (e *Engine) CreateArtists(artists []ArtistIngestion) error {
+func (e *Engine) CreateArtists(artists []storage.ArtistIngestion) error {
 	for _, artist := range artists {
 
 		err := e.queries.CreateArtist(context.Background(), db.CreateArtistParams{

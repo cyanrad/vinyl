@@ -1,5 +1,9 @@
 package util
 
+import (
+	"strings"
+)
+
 type ResourceType string
 
 const (
@@ -8,4 +12,40 @@ const (
 	ALBUMS    ResourceType = "albums"
 	PLAYLISTS ResourceType = "playlists"
 	AUDIO     ResourceType = "audio"
+	UNKNOWN   ResourceType = "unknown"
 )
+
+var resourceTypeMap = map[string]ResourceType{
+	"track":    TRACKS,
+	"artist":   ARTISTS,
+	"album":    ALBUMS,
+	"playlist": PLAYLISTS,
+	"audio":    AUDIO,
+}
+
+func MapStrToResourceType(str string) ResourceType {
+	if rt, ok := resourceTypeMap[str]; ok {
+		return rt
+	}
+	return UNKNOWN
+}
+
+type IngestionSource int
+
+const (
+	SOURCE_UNKNOWN IngestionSource = iota
+	SOURCE_LOCAL
+	SOURCE_SPOTIFY
+)
+
+func MapStrToIngestionSource(str string) IngestionSource {
+	str = strings.ToLower(str)
+	switch str {
+	case "local":
+		return SOURCE_LOCAL
+	case "spotify":
+		return SOURCE_SPOTIFY
+	default:
+		return SOURCE_UNKNOWN
+	}
+}

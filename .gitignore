@@ -9,6 +9,7 @@
 /files/data/*.json
 /files/dist
 /files/database.db
+/files/.env
 
 # executable
 vinyl
