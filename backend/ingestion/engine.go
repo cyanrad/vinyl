@@ -20,8 +20,8 @@ type Engine struct {
 	queries *db.Queries
 }
 
-func NewEngine(queries *db.Queries) *Engine {
-	cache := storage.NewCache()
+func NewEngine(queries *db.Queries, cachePath string) *Engine {
+	cache := storage.NewCache(cachePath)
 	return &Engine{
 		cache:   cache,
 		queries: queries,
@@ -29,14 +29,23 @@ func NewEngine(queries *db.Queries) *Engine {
 }
 
 func (e *Engine) IngestSpotify(ctx context.Context, resourceType util.ResourceType, resourceID string) error {
-	spotifyConn, err := spotify.Connect(ctx)
+	spotifyConn, err := spotify.Connect(ctx, e.cache)
 	if err != nil {
 		panic(err)
+	}
+
+	if util.BUST_CACHE {
+		log.Printf("Removing cached object for Spotify resource: %s - ID: %s\n", string(resourceType), resourceID)
+		err := e.cache.Delete(resourceType, util.SOURCE_SPOTIFY, resourceID)
+		if err != nil {
+			return err
+		}
 	}
 
 	switch resourceType {
 	case util.PLAYLISTS:
 		data, err := spotifyConn.GeneratePlaylistData(resourceID)
+		log.Println(err)
 		log.Println(data)
 		return err
 	default:

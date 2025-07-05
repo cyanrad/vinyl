@@ -30,12 +30,12 @@ func MapStrToResourceType(str string) ResourceType {
 	return UNKNOWN
 }
 
-type IngestionSource int
+type IngestionSource string
 
 const (
-	SOURCE_UNKNOWN IngestionSource = iota
-	SOURCE_LOCAL
-	SOURCE_SPOTIFY
+	SOURCE_UNKNOWN IngestionSource = "unknown"
+	SOURCE_LOCAL   IngestionSource = "local"
+	SOURCE_SPOTIFY IngestionSource = "spotify"
 )
 
 func MapStrToIngestionSource(str string) IngestionSource {

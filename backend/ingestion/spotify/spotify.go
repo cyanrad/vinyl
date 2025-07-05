@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"main/ingestion/storage"
 	"main/util"
 
 	"github.com/zmb3/spotify/v2"
@@ -15,9 +16,14 @@ import (
 type SpotifyConn struct {
 	client *spotify.Client
 	ctx    context.Context
+	cache  *storage.Cache
 }
 
-func Connect(ctx context.Context) (SpotifyConn, error) {
+func Connect(ctx context.Context, cache *storage.Cache) (SpotifyConn, error) {
+	if cache == nil {
+		return SpotifyConn{}, errors.New("nil cache passed to SpotifyConn.Connect")
+	}
+
 	// TODO: should handle token expiry
 	if util.SPOTIFY_SECRET == "" || util.SPOTIFY_ID == "" {
 		return SpotifyConn{}, errors.New("spotify id or secret not provided")
@@ -43,5 +49,6 @@ func Connect(ctx context.Context) (SpotifyConn, error) {
 	return SpotifyConn{
 		client: client,
 		ctx:    ctx,
+		cache:  cache,
 	}, nil
 }

@@ -54,7 +54,7 @@ func initDatabase() databaseConn {
 }
 
 func runIngestion(ctx context.Context, queries *db.Queries) {
-	engine := ingestion.NewEngine(queries)
+	engine := ingestion.NewEngine(queries, util.CACHE_PATH)
 
 	switch util.SOURCE {
 	case util.SOURCE_LOCAL:

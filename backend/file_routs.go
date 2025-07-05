@@ -14,6 +14,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// TODO: this is no a good idea, should be changed to a class
 func serveArtistImage(db *db.Queries) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		// getting artist ID

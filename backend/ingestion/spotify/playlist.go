@@ -1,6 +1,7 @@
 package spotify
 
 import (
+	"fmt"
 	"log"
 	"main/util"
 
@@ -16,6 +17,25 @@ type PlaylistData struct {
 const PAGE_SIZE int = 100
 
 func (s SpotifyConn) GeneratePlaylistData(playlistID string) (PlaylistData, error) {
+	log.Println("Checking if playlist data is cached")
+
+	data := PlaylistData{}
+	found, err := s.cache.Get(util.PLAYLISTS, util.SOURCE_SPOTIFY, playlistID, &data)
+	if err != nil {
+		if found {
+			log.Printf("Unexpected error occoured even though object %s was found. Busting cache\n", playlistID)
+			delerr := s.cache.Delete(util.PLAYLISTS, util.SOURCE_SPOTIFY, playlistID)
+			if delerr != nil { // this is too nested...
+				err = fmt.Errorf("%v; %v", err, delerr)
+			}
+		}
+
+		return PlaylistData{}, err
+	} else if found {
+		log.Println("Cached object found. Use --bust-cache to force reset")
+		return data, nil
+	}
+
 	log.Printf("Generating Spotify playlist %s data from public API\n", playlistID)
 	playlistPage, err := s.client.GetPlaylist(s.ctx, spotify.ID(playlistID))
 	if err != nil {
@@ -51,6 +71,11 @@ func (s SpotifyConn) GeneratePlaylistData(playlistID string) (PlaylistData, erro
 		}
 	}
 
-	log.Printf("Spotify playlist %s complete\n", playlistID)
+	log.Printf("Spotify playlist %s complete. Caching object\n", playlistID)
+	err = s.cache.Store(util.PLAYLISTS, util.SOURCE_SPOTIFY, playlistID, playlistData)
+	if err != nil {
+		return PlaylistData{}, nil
+	}
+
 	return playlistData, nil
 }

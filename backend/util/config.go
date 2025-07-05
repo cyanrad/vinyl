@@ -18,9 +18,11 @@ var (
 	DATABASE_PATH string
 	FRONTEND_PATH string
 	DATA_PATH     string
+	CACHE_PATH    string
 
 	// Ingesetion
 	INGEST      bool
+	BUST_CACHE  bool
 	SOURCE      IngestionSource
 	RESOURCE    ResourceType
 	RESOURCE_ID string
@@ -37,13 +39,15 @@ func InitConfig() {
 	flag.StringVar(&MEDIA_PATH, "media-path", "./files", "Base media directory path")
 
 	// getting paths relative to media folder
-	var relDBPath, relDataPath, relFrontendPath string
+	var relDBPath, relDataPath, relFrontendPath, relCachePath string
 	flag.StringVar(&relDBPath, "database-path", "database.db", "SQLite database file path (relative to media-path)")
 	flag.StringVar(&relDataPath, "data-path", "data", "Resource JSON data directory path (relative to media-path)")
 	flag.StringVar(&relFrontendPath, "frontend-path", "dist", "Frontend dist path (relative to media-path)")
+	flag.StringVar(&relCachePath, "cache-path", "cache", "Cache file that contains in memory objects & json files of external source APIs (relative to media-path)")
 
 	// Ingestion and API usage should be seperate operations in the executable
 	flag.BoolVar(&INGEST, "ingest", false, "Runs ingestion mode where the data is consumed and inserted into the database file specificed by the database-path arg")
+	flag.BoolVar(&BUST_CACHE, "bust-cache", false, "Removes the cache on a given resource. best used for resetting an external source data")
 
 	var source, resource string
 	flag.StringVar(&source, "source", "", "The source the data is coming from. current available sources are: local, spotify")
@@ -56,6 +60,7 @@ func InitConfig() {
 	DATABASE_PATH = filepath.Join(MEDIA_PATH, relDBPath)
 	DATA_PATH = filepath.Join(MEDIA_PATH, relDataPath)
 	FRONTEND_PATH = filepath.Join(MEDIA_PATH, relFrontendPath)
+	CACHE_PATH = filepath.Join(MEDIA_PATH, relCachePath)
 
 	// Handling ingestion variables & checks
 	SOURCE = MapStrToIngestionSource(source)
