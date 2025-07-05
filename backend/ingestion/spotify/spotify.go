@@ -81,3 +81,18 @@ func (s *SpotifyConn) getCached(resource util.ResourceType, source util.Ingestio
 	}
 	return found, nil
 }
+
+// WARNING: please for the love of god find a better way to do this
+func deduplicate(input []spotify.ID) []spotify.ID {
+	seen := make(map[spotify.ID]bool)
+	result := []spotify.ID{}
+
+	for _, val := range input {
+		if !seen[val] {
+			seen[val] = true
+			result = append(result, val)
+		}
+	}
+
+	return result
+}

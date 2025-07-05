@@ -40,7 +40,7 @@ func (s *SpotifyConn) GetFullArtists(artistIDs []spotify.ID) ([]*spotify.FullArt
 	log.Printf("Generating %d Spotify artists data from public API\n", len(nonCachedIDs))
 	for offset := 0; offset < len(nonCachedIDs); offset += util.ARTIST_PAGE_SIZE {
 		util.LogProgress(offset, len(nonCachedIDs))
-		end := min(offset+50, len(nonCachedIDs))
+		end := min(offset+util.ARTIST_PAGE_SIZE, len(nonCachedIDs))
 
 		artistsPage, err := s.client.GetArtists(s.ctx, nonCachedIDs[offset:end]...)
 		if err != nil {
@@ -71,19 +71,4 @@ func generateArtistIngestion(artist spotify.FullArtist) storage.ArtistIngestion 
 			Spotify: &spotifyURL,
 		},
 	}
-}
-
-// WARNING: please for the love of god find a better way to do this
-func deduplicate(input []spotify.ID) []spotify.ID {
-	seen := make(map[spotify.ID]bool)
-	result := []spotify.ID{}
-
-	for _, val := range input {
-		if !seen[val] {
-			seen[val] = true
-			result = append(result, val)
-		}
-	}
-
-	return result
 }

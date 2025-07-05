@@ -14,7 +14,9 @@ const (
 	// spotify API
 	PLAYLIST_PAGE_SIZE      int    = 100
 	ARTIST_PAGE_SIZE        int    = 50
+	ALBUM_PAGE_SIZE         int    = 20
 	SPOTIFY_ARTIST_URL_BASE string = "https://open.spotify.com/artist/"
+	SPOTIFY_ALBUM_URL_BASE  string = "https://open.spotify.com/album/"
 )
 
 var (
