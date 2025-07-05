@@ -47,6 +47,11 @@ func (e *Engine) IngestSpotify(ctx context.Context, resourceType util.ResourceTy
 		data, err := spotifyConn.GeneratePlaylistData(resourceID)
 		log.Println(err)
 		log.Println(data)
+
+		artists, err := spotifyConn.GetFullArtists(data.ArtistIDs)
+		for _, artist := range artists {
+			log.Println(*artist)
+		}
 		return err
 	default:
 		log.Fatalf("ingestion type %s for spotify is not implemented. terminating program", resourceType)

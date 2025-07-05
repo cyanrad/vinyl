@@ -4,6 +4,7 @@ package spotify
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"main/ingestion/storage"
 	"main/util"
@@ -51,4 +52,32 @@ func Connect(ctx context.Context, cache *storage.Cache) (SpotifyConn, error) {
 		ctx:    ctx,
 		cache:  cache,
 	}, nil
+}
+
+// getCached the bool is supposed to indicate if data is usable
+func (s *SpotifyConn) getCached(resource util.ResourceType, source util.IngestionSource, id string, data any) (bool, error) {
+	if data == nil {
+		return false, errors.New("nil cache passed to SpotifyConn.getCached")
+	}
+
+	log.Printf("Checking if resource %s from %s id %s is cached", resource, source, id)
+	found, err := s.cache.Get(resource, source, id, data)
+	if err != nil {
+		if found {
+			log.Printf("Unexpected error occoured even though object %s was found. Busting cache", id)
+			delerr := s.cache.Delete(util.PLAYLISTS, util.SOURCE_SPOTIFY, id)
+			if delerr != nil { // this is too nested...
+				err = fmt.Errorf("%v; %v", err, delerr)
+			}
+		}
+
+		return false, err
+	}
+
+	if found {
+		log.Println("Cached object found")
+	} else {
+		log.Println("Cached object was not found")
+	}
+	return found, nil
 }

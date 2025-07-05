@@ -1,7 +1,6 @@
 package spotify
 
 import (
-	"fmt"
 	"log"
 	"main/util"
 
@@ -14,25 +13,12 @@ type PlaylistData struct {
 	Tracks    []spotify.FullTrack
 }
 
-const PAGE_SIZE int = 100
-
-func (s SpotifyConn) GeneratePlaylistData(playlistID string) (PlaylistData, error) {
-	log.Println("Checking if playlist data is cached")
-
+func (s *SpotifyConn) GeneratePlaylistData(playlistID string) (PlaylistData, error) {
 	data := PlaylistData{}
-	found, err := s.cache.Get(util.PLAYLISTS, util.SOURCE_SPOTIFY, playlistID, &data)
+	found, err := s.getCached(util.PLAYLISTS, util.SOURCE_SPOTIFY, playlistID, &data)
 	if err != nil {
-		if found {
-			log.Printf("Unexpected error occoured even though object %s was found. Busting cache\n", playlistID)
-			delerr := s.cache.Delete(util.PLAYLISTS, util.SOURCE_SPOTIFY, playlistID)
-			if delerr != nil { // this is too nested...
-				err = fmt.Errorf("%v; %v", err, delerr)
-			}
-		}
-
 		return PlaylistData{}, err
 	} else if found {
-		log.Println("Cached object found. Use --bust-cache to force reset")
 		return data, nil
 	}
 
@@ -42,13 +28,13 @@ func (s SpotifyConn) GeneratePlaylistData(playlistID string) (PlaylistData, erro
 		return PlaylistData{}, err
 	}
 
-	offset := PAGE_SIZE
+	offset := util.PLAYLIST_PAGE_SIZE
 	playlistSize := int(playlistPage.Tracks.Total)
 
 	tracks := make([]spotify.PlaylistTrack, 0, playlistSize)
 	tracks = append(tracks, playlistPage.Tracks.Tracks...)
 
-	for ; offset < playlistSize; offset += PAGE_SIZE {
+	for ; offset < playlistSize; offset += util.PLAYLIST_PAGE_SIZE {
 		util.LogProgress(offset, playlistSize)
 		playlistPage, err = s.client.GetPlaylist(s.ctx, spotify.ID(playlistID), spotify.Offset(offset))
 		if err != nil {
