@@ -42,29 +42,15 @@ func (e *Engine) IngestSpotify(ctx context.Context, resourceType util.ResourceTy
 		}
 	}
 
+	log.Printf("Beginning ingestion of spotify %s %s", resourceType, resourceID)
 	switch resourceType {
 	case util.PLAYLISTS:
-		data, err := spotifyConn.GeneratePlaylistData(resourceID)
-		log.Println(err)
-		log.Println(data)
-
-		artists, err := spotifyConn.GetFullArtists(data.ArtistIDs)
-		log.Println(err)
-		for _, artist := range artists {
-			log.Println(*artist)
-		}
-
-		albums, err := spotifyConn.GetFullAlbums(data.AlbumIDs)
-		log.Println(err)
-		for _, album := range albums {
-			log.Println(*album)
-		}
-
-		return err
+		err = spotifyConn.IngestPlaylist(resourceID)
 	default:
 		log.Fatalf("ingestion type %s for spotify is not implemented. terminating program", resourceType)
-		return nil
 	}
+
+	return err
 }
 
 func (e *Engine) IngestArtists() ([]storage.ArtistIngestion, error) {

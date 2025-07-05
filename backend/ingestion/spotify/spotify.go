@@ -54,6 +54,26 @@ func Connect(ctx context.Context, cache *storage.Cache) (SpotifyConn, error) {
 	}, nil
 }
 
+func (s *SpotifyConn) IngestPlaylist(playlistID string) error {
+	data, err := s.GeneratePlaylistData(playlistID)
+	log.Println(err)
+	log.Println(data)
+
+	artists, err := s.GetFullArtists(data.ArtistIDs)
+	log.Println(err)
+	for _, artist := range artists {
+		log.Println(*artist)
+	}
+
+	albums, err := s.GetFullAlbums(data.AlbumIDs)
+	log.Println(err)
+	for _, album := range albums {
+		log.Println(*album)
+	}
+
+	return err
+}
+
 // getCached the bool is supposed to indicate if data is usable
 func (s *SpotifyConn) getCached(resource util.ResourceType, source util.IngestionSource, id string, data any) (bool, error) {
 	if data == nil {
