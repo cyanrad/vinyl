@@ -48,13 +48,22 @@ func (q *Queries) GetAlbumById(ctx context.Context, id int64) (GetAlbumByIdRow, 
 }
 
 const getAlbumByName = `-- name: GetAlbumByName :one
+WITH album_full_name AS (
+    SELECT  a.id,
+            LOWER(GROUP_CONCAT(ar.name, ' & ') || ' - ' || a.name) AS full_name
+      FROM  albums a
+      LEFT  JOIN artists_albums aa  ON a.id = aa.album_id
+      LEFT  JOIN artists ar         ON aa.artist_id = ar.id
+     GROUP  BY 1
+)
 SELECT  a.id
   FROM  albums a
- WHERE  a.name = ?
+  LEFT  JOIN album_full_name USING (id)
+ WHERE  full_name = LOWER(?)
 `
 
-func (q *Queries) GetAlbumByName(ctx context.Context, name string) (int64, error) {
-	row := q.db.QueryRowContext(ctx, getAlbumByName, name)
+func (q *Queries) GetAlbumByName(ctx context.Context, lower string) (int64, error) {
+	row := q.db.QueryRowContext(ctx, getAlbumByName, lower)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -137,11 +146,37 @@ func (q *Queries) GetArtistById(ctx context.Context, id int64) (Artist, error) {
 const getArtistByName = `-- name: GetArtistByName :one
 SELECT  a.id
   FROM  artists AS a
- WHERE  a.name = ?
+ WHERE  LOWER(a.name) = LOWER(?)
 `
 
-func (q *Queries) GetArtistByName(ctx context.Context, name string) (int64, error) {
-	row := q.db.QueryRowContext(ctx, getArtistByName, name)
+func (q *Queries) GetArtistByName(ctx context.Context, lower string) (int64, error) {
+	row := q.db.QueryRowContext(ctx, getArtistByName, lower)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
+const getTrackByName = `-- name: GetTrackByName :one
+;
+
+WITH track_full_name AS (
+    SELECT  t.id,
+            LOWER(GROUP_CONCAT(ar.name, ' & ') || COALESCE(' - ' || al.name, '') || ' - ' || t.title) AS full_name
+      FROM  tracks AS t
+      JOIN  tracks_artists AS tar         ON t.id = tar.track_id
+      JOIN  artists AS ar                 ON tar.artist_id = ar.id
+      LEFT  JOIN tracks_albums AS tal     ON t.id = tal.track_id
+      LEFT  JOIN albums AS al             ON tal.album_id = al.id
+     GROUP  BY 1
+)
+SELECT  t.id
+  FROM  tracks t
+  LEFT  JOIN track_full_name USING (id)
+ WHERE  full_name = LOWER(?)
+`
+
+func (q *Queries) GetTrackByName(ctx context.Context, lower string) (int64, error) {
+	row := q.db.QueryRowContext(ctx, getTrackByName, lower)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
