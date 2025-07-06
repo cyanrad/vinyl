@@ -20,14 +20,14 @@ type SpotifyConn struct {
 	cache  *storage.Cache
 }
 
-func Connect(ctx context.Context, cache *storage.Cache) (SpotifyConn, error) {
+func Connect(ctx context.Context, cache *storage.Cache) (*SpotifyConn, error) {
 	if cache == nil {
-		return SpotifyConn{}, errors.New("nil cache passed to SpotifyConn.Connect")
+		return nil, errors.New("nil cache passed to SpotifyConn.Connect")
 	}
 
 	// TODO: should handle token expiry
 	if util.SPOTIFY_SECRET == "" || util.SPOTIFY_ID == "" {
-		return SpotifyConn{}, errors.New("spotify id or secret not provided")
+		return nil, errors.New("spotify id or secret not provided")
 	}
 
 	// Credentials to get the API token
@@ -40,18 +40,19 @@ func Connect(ctx context.Context, cache *storage.Cache) (SpotifyConn, error) {
 	log.Println("Getting Spotify token")
 	token, err := config.Token(ctx)
 	if err != nil {
-		return SpotifyConn{}, errors.New("failed to get spotify token. check if api id & secret are valid")
+		return nil, errors.New("failed to get spotify token. check if api id & secret are valid")
 	}
 
 	log.Println("Creating Spotify client")
 	httpClient := spotifyauth.New().Client(ctx, token)
 	client := spotify.New(httpClient)
 
-	return SpotifyConn{
+	s := SpotifyConn{
 		client: client,
 		ctx:    ctx,
 		cache:  cache,
-	}, nil
+	}
+	return &s, nil
 }
 
 func (s *SpotifyConn) IngestPlaylist(playlistID string) error {
@@ -72,6 +73,60 @@ func (s *SpotifyConn) IngestPlaylist(playlistID string) error {
 	}
 
 	return err
+}
+
+func (s *SpotifyConn) GetTrackIngestion(trackID string) (TrackIngestion, error) {
+	// getting the track data
+	tracks, err := s.GetFullTracks([]spotify.ID{spotify.ID(trackID)})
+	if err != nil {
+		return TrackIngestion{}, err
+	}
+	if len(tracks) > 1 {
+		panic("what??!?")
+	}
+	track := tracks[0]
+
+	// getting artists who worked on the track
+	trackArtists, err := s.generateSimpleArtistIngestion(track.Artists)
+	if err != nil {
+		return TrackIngestion{}, nil
+	}
+
+	// getting albums data
+	var albumIngestion *AlbumIngestion = nil
+	if track.Album.AlbumType != "single" { // if the album is a single we don't count it as an album in our data
+		albums, err := s.GetFullAlbums([]spotify.ID{track.Album.ID})
+		if err != nil {
+			return TrackIngestion{}, err
+		}
+		if len(albums) > 1 {
+			panic("whaaaaaaat??!??!?")
+		}
+		album := albums[0]
+
+		// getting all the artists involved in the album
+		albumArtists, err := s.generateSimpleArtistIngestion(album.Artists)
+		if err != nil {
+			return TrackIngestion{}, nil
+		}
+
+		// generating album ingestion
+		albumIngestion = &AlbumIngestion{
+			Name:     album.Name,
+			ImageURL: album.Images[0].URL,
+			Artists:  albumArtists,
+		}
+	}
+
+	// creating imgestion type
+	return TrackIngestion{
+		Title:     track.Name,
+		Tags:      nil,
+		AlbumRank: int(track.TrackNumber),
+		ImageURL:  track.Album.Images[0].URL, // getting the highest res image
+		Album:     albumIngestion,
+		Artists:   trackArtists,
+	}, nil
 }
 
 // getCached the bool is supposed to indicate if data is usable

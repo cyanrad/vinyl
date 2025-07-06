@@ -54,7 +54,7 @@ func initDatabase() databaseConn {
 }
 
 func runIngestion(ctx context.Context, queries *db.Queries) {
-	engine := ingestion.NewEngine(queries, util.CACHE_PATH)
+	engine := ingestion.NewEngine(ctx, queries, util.CACHE_PATH)
 
 	switch util.SOURCE {
 	case util.SOURCE_LOCAL:
@@ -62,7 +62,7 @@ func runIngestion(ctx context.Context, queries *db.Queries) {
 		engine.IngestAndCreateData()
 	case util.SOURCE_SPOTIFY:
 		log.Println("Ingesting Spotify data")
-		engine.IngestSpotify(ctx, util.RESOURCE, util.RESOURCE_ID)
+		engine.IngestSpotify(util.RESOURCE, util.RESOURCE_ID)
 	default:
 		panic("what the actual fuck")
 	}

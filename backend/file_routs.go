@@ -135,7 +135,7 @@ func serveTrackAudio(db *db.Queries) echo.HandlerFunc {
 
 		// getting track cover file path
 		artistNames := util.GenerateConcatNames(util.JSONArrToStrArr(trackItem.ArtistNames))
-		path, exists := checkIfAudioExists(util.GenerateTrackName(trackItem.Title, artistNames, trackItem.AlbumName))
+		path, exists := checkIfAudioExists(util.GenerateTrackName(artistNames, trackItem.AlbumName, trackItem.Title))
 		if !exists {
 			return echo.NewHTTPError(http.StatusNotFound, "Audio not found")
 		}
@@ -157,7 +157,7 @@ func getTrackCoverFilePath(trackItem db.GetTrackItemByIdRow) (string, bool) {
 	// we attempt to find a cover for the track first, then ablum cover then artist image
 	// track cover
 	if path, exists := checkIfImageExists(util.TRACKS,
-		util.GenerateTrackName(trackItem.Title, artistName, trackItem.AlbumName)); exists {
+		util.GenerateTrackName(artistName, trackItem.AlbumName, trackItem.Title)); exists {
 		return path, true
 	}
 

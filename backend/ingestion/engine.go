@@ -18,18 +18,20 @@ import (
 type Engine struct {
 	cache   *storage.Cache
 	queries *db.Queries
+	ctx     context.Context
 }
 
-func NewEngine(queries *db.Queries, cachePath string) *Engine {
+func NewEngine(ctx context.Context, queries *db.Queries, cachePath string) *Engine {
 	cache := storage.NewCache(cachePath)
 	return &Engine{
 		cache:   cache,
 		queries: queries,
+		ctx:     ctx,
 	}
 }
 
-func (e *Engine) IngestSpotify(ctx context.Context, resourceType util.ResourceType, resourceID string) error {
-	spotifyConn, err := spotify.Connect(ctx, e.cache)
+func (e *Engine) IngestSpotify(resourceType util.ResourceType, resourceID string) error {
+	spotifyConn, err := spotify.Connect(e.ctx, e.cache)
 	if err != nil {
 		panic(err)
 	}
@@ -46,11 +48,84 @@ func (e *Engine) IngestSpotify(ctx context.Context, resourceType util.ResourceTy
 	switch resourceType {
 	case util.PLAYLISTS:
 		err = spotifyConn.IngestPlaylist(resourceID)
+	case util.TRACKS:
+		err = e.IngestSpotifyTrack(spotifyConn, resourceID)
 	default:
 		log.Fatalf("ingestion type %s for spotify is not implemented. terminating program", resourceType)
 	}
 
 	return err
+}
+
+func (e *Engine) IngestSpotifyTrack(s *spotify.SpotifyConn, trackID string) error {
+	ingestion, err := s.GetTrackIngestion(trackID)
+	if err != nil {
+		return err
+	}
+
+	// creating track artists
+	trackArtists := make([]string, len(ingestion.Artists))
+	for i, artist := range ingestion.Artists {
+		trackArtists[i] = artist.Name
+		if err = e.CreateArtists([]storage.ArtistIngestion{
+			{Name: artist.Name, Links: artist.Links, Description: nil},
+		}); err != nil {
+			return err
+		}
+
+		storage.FetchImage(util.ARTISTS, artist.ImageURL, artist.Name)
+	}
+
+	// creating album
+	var album *string = nil
+	var albumRank *int = nil
+	if ingestion.Album != nil {
+		// creating album artists & getting their names
+		artists := make([]string, len(ingestion.Album.Artists))
+		for i, artist := range ingestion.Album.Artists {
+			artists[i] = artist.Name
+			if err = e.CreateArtists([]storage.ArtistIngestion{
+				{Name: artist.Name, Links: artist.Links, Description: nil},
+			}); err != nil {
+				return err
+			}
+		}
+
+		if err := e.CreateAlbums([]storage.AlbumIngestion{
+			{Name: ingestion.Album.Name, Artists: artists, Description: nil},
+		}); err != nil {
+			return err
+		}
+
+		albumFullName := util.GenerateAlbumName(util.GenerateConcatNames(artists), ingestion.Album.Name)
+		album = &albumFullName
+		albumRank = &ingestion.AlbumRank
+
+		// fetching album image
+		storage.FetchImage(util.ALBUMS, ingestion.Album.ImageURL, albumFullName)
+	}
+
+	// creating track
+	if err := e.CreateTracks([]storage.TrackIngestion{
+		{
+			Title:       ingestion.Title,
+			Artists:     trackArtists,
+			Album:       album,
+			AlbumRank:   albumRank,
+			Description: nil,
+			Tags:        nil,
+		},
+	}); err != nil {
+		return err
+	}
+
+	// we fetch the image if the album doesn't exist or is a single
+	if ingestion.Album == nil {
+		trackFullTitle := util.GenerateAlbumName(util.GenerateConcatNames(trackArtists), ingestion.Title)
+		storage.FetchImage(util.TRACKS, ingestion.ImageURL, trackFullTitle)
+	}
+
+	return nil
 }
 
 func (e *Engine) IngestArtists() ([]storage.ArtistIngestion, error) {

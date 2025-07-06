@@ -12,7 +12,7 @@ const SEP = " - "
 // GenerateTrackName -> "artist1 & artist2 & ... - album - track"
 // to generate the correct name you should use GenerateConcatNames on artists before using this
 // if album is nil it's omitted
-func GenerateTrackName(trackName string, artistName string, albumName *string) string {
+func GenerateTrackName(artistName string, albumName *string, trackName string) string {
 	name := artistName
 	if albumName != nil {
 		name += SEP + *albumName

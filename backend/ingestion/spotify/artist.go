@@ -8,6 +8,7 @@ import (
 	"github.com/zmb3/spotify/v2"
 )
 
+// TODO: if this func ends up not using IDs directly just make it take simple artits
 func (s *SpotifyConn) GetFullArtists(artistIDs []spotify.ID) ([]*spotify.FullArtist, error) {
 	artistIDs = deduplicate(artistIDs)
 	log.Printf("Getting %d artists\n", len(artistIDs))
@@ -61,14 +62,33 @@ func (s *SpotifyConn) GetFullArtists(artistIDs []spotify.ID) ([]*spotify.FullArt
 	return artists, nil
 }
 
-func generateArtistIngestion(artist spotify.FullArtist) storage.ArtistIngestion {
-	spotifyURL := util.SPOTIFY_ARTIST_URL_BASE + artist.ID.String()
-
-	return storage.ArtistIngestion{
-		Name:        artist.Name,
-		Description: nil,
-		Links: storage.ArtistLinks{
-			Spotify: &spotifyURL,
-		},
+func (s *SpotifyConn) generateSimpleArtistIngestion(artists []spotify.SimpleArtist) ([]ArtistIngestion, error) {
+	// getting artist IDs
+	artistIDs := make([]spotify.ID, len(artists))
+	for i, a := range artists {
+		artistIDs[i] = a.ID
 	}
+
+	// getting artists
+	fullArtists, err := s.GetFullArtists(artistIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	// creating track artist ingestion
+	ingestions := make([]ArtistIngestion, len(fullArtists))
+	for i, a := range fullArtists {
+		links := storage.ArtistLinks{}
+		if url, ok := a.ExternalURLs["spotify"]; ok {
+			links.Spotify = &url
+		}
+
+		ingestions[i] = ArtistIngestion{
+			Name:     a.Name,
+			Links:    links,
+			ImageURL: a.Images[0].URL,
+		}
+	}
+
+	return ingestions, nil
 }
