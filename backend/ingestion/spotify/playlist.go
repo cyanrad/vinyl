@@ -20,30 +20,30 @@ func (s *SpotifyConn) GetPlaylistData(playlistID string) ([]*spotify.FullTrack, 
 
 	// initial page fetch
 	log.Printf("Generating Spotify playlist %s data from public API\n", playlistID)
-	playlistPage, err := s.client.GetPlaylist(s.ctx, spotify.ID(playlistID))
+	playlist, err := s.client.GetPlaylist(s.ctx, spotify.ID(playlistID))
 	if err != nil {
 		return nil, err
 	}
 
 	// initializing vars
 	offset := util.PLAYLIST_PAGE_SIZE
-	playlistSize := int(playlistPage.Tracks.Total)
+	playlistSize := int(playlist.Tracks.Total)
 	data = make([]*spotify.FullTrack, 0, playlistSize)
 
-	for _, track := range playlistPage.Tracks.Tracks {
+	for _, track := range playlist.Tracks.Tracks {
 		data = append(data, &track.Track)
 	}
 
 	// looping page fetches
 	for ; offset < playlistSize; offset += util.PLAYLIST_PAGE_SIZE {
 		util.LogProgress(offset, playlistSize)
-		playlistPage, err = s.client.GetPlaylist(s.ctx, spotify.ID(playlistID), spotify.Offset(offset))
+		playlistPage, err := s.client.GetPlaylistItems(s.ctx, spotify.ID(playlistID), spotify.Offset(offset))
 		if err != nil {
 			return nil, err
 		}
 
-		for _, track := range playlistPage.Tracks.Tracks {
-			data = append(data, &track.Track)
+		for _, track := range playlistPage.Items {
+			data = append(data, track.Track.Track)
 		}
 	}
 
