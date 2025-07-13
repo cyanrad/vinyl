@@ -6,6 +6,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.13.4
 	github.com/mattn/go-sqlite3 v1.14.28
+	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
 	github.com/zmb3/spotify/v2 v2.4.3
 	golang.org/x/oauth2 v0.0.0-20210810183815-faf39c7919d5
 )

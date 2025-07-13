@@ -3,7 +3,8 @@ package storage
 import "encoding/json"
 
 type TrackIngestion struct {
-	Title       string   `json:"title"`
+	Title       string `json:"title"`
+	FullTitle   string
 	Artists     []string `json:"artists"`
 	Album       *string  `json:"album,omitempty"`
 	AlbumRank   *int     `json:"albumRank,omitempty"`
@@ -12,7 +13,8 @@ type TrackIngestion struct {
 }
 
 type AlbumIngestion struct {
-	Name        string   `json:"name"`
+	Name        string `json:"name"`
+	FullName    string
 	Artists     []string `json:"artists"`
 	Description *string  `json:"description,omitempty"`
 }

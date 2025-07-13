@@ -13,6 +13,7 @@ import (
 const getAlbumById = `-- name: GetAlbumById :one
 SELECT  al.id,
         al.name,
+        al.full_name,
         al.description,
         al.created_at,
         GROUP_CONCAT(ar.id, ',')     AS artist_ids,
@@ -21,12 +22,13 @@ SELECT  al.id,
   LEFT  JOIN artists_albums aa  ON al.id = aa.album_id
   LEFT  JOIN artists ar         ON aa.artist_id = ar.id
  WHERE  al.id = ?
- GROUP  BY 1,2,3,4
+ GROUP  BY 1,2,3,4,5
 `
 
 type GetAlbumByIdRow struct {
 	ID          int64     `json:"id"`
 	Name        string    `json:"name"`
+	FullName    string    `json:"fullName"`
 	Description *string   `json:"description"`
 	CreatedAt   time.Time `json:"createdAt"`
 	ArtistIds   string    `json:"artistIds"`
@@ -39,6 +41,7 @@ func (q *Queries) GetAlbumById(ctx context.Context, id int64) (GetAlbumByIdRow, 
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
+		&i.FullName,
 		&i.Description,
 		&i.CreatedAt,
 		&i.ArtistIds,
@@ -48,18 +51,9 @@ func (q *Queries) GetAlbumById(ctx context.Context, id int64) (GetAlbumByIdRow, 
 }
 
 const getAlbumByName = `-- name: GetAlbumByName :one
-WITH album_full_name AS (
-    SELECT  a.id,
-            LOWER(GROUP_CONCAT(ar.name, ' & ') || ' - ' || a.name) AS full_name
-      FROM  albums a
-      LEFT  JOIN artists_albums aa  ON a.id = aa.album_id
-      LEFT  JOIN artists ar         ON aa.artist_id = ar.id
-     GROUP  BY 1
-)
 SELECT  a.id
   FROM  albums a
-  LEFT  JOIN album_full_name USING (id)
- WHERE  full_name = LOWER(?)
+ WHERE  LOWER(a.full_name) = LOWER(?)
 `
 
 func (q *Queries) GetAlbumByName(ctx context.Context, lower string) (int64, error) {
@@ -159,20 +153,9 @@ func (q *Queries) GetArtistByName(ctx context.Context, lower string) (int64, err
 const getTrackByName = `-- name: GetTrackByName :one
 ;
 
-WITH track_full_name AS (
-    SELECT  t.id,
-            LOWER(GROUP_CONCAT(ar.name, ' & ') || COALESCE(' - ' || al.name, '') || ' - ' || t.title) AS full_name
-      FROM  tracks AS t
-      JOIN  tracks_artists AS tar         ON t.id = tar.track_id
-      JOIN  artists AS ar                 ON tar.artist_id = ar.id
-      LEFT  JOIN tracks_albums AS tal     ON t.id = tal.track_id
-      LEFT  JOIN albums AS al             ON tal.album_id = al.id
-     GROUP  BY 1
-)
 SELECT  t.id
-  FROM  tracks t
-  LEFT  JOIN track_full_name USING (id)
- WHERE  full_name = LOWER(?)
+  FROM  tracks AS t
+ WHERE  LOWER(full_title) = LOWER(?)
 `
 
 func (q *Queries) GetTrackByName(ctx context.Context, lower string) (int64, error) {
@@ -185,8 +168,10 @@ func (q *Queries) GetTrackByName(ctx context.Context, lower string) (int64, erro
 const getTrackItemById = `-- name: GetTrackItemById :one
 SELECT  t.id                                       AS track_id,
         t.title,
+        t.full_title,
         al.id                                      AS album_id,
         al.name                                    AS album_name,
+        al.full_name                               AS album_full_name,
         CAST(JSON_GROUP_ARRAY(ar.id) AS TEXT)      AS artist_ids,
         CAST(JSON_GROUP_ARRAY(ar.name) AS TEXT)    AS artist_names
   FROM  tracks AS t
@@ -199,12 +184,14 @@ SELECT  t.id                                       AS track_id,
 `
 
 type GetTrackItemByIdRow struct {
-	TrackID     int64   `json:"trackId"`
-	Title       string  `json:"title"`
-	AlbumID     *int64  `json:"albumId"`
-	AlbumName   *string `json:"albumName"`
-	ArtistIds   string  `json:"artistIds"`
-	ArtistNames string  `json:"artistNames"`
+	TrackID       int64   `json:"trackId"`
+	Title         string  `json:"title"`
+	FullTitle     string  `json:"fullTitle"`
+	AlbumID       *int64  `json:"albumId"`
+	AlbumName     *string `json:"albumName"`
+	AlbumFullName *string `json:"albumFullName"`
+	ArtistIds     string  `json:"artistIds"`
+	ArtistNames   string  `json:"artistNames"`
 }
 
 func (q *Queries) GetTrackItemById(ctx context.Context, id int64) (GetTrackItemByIdRow, error) {
@@ -213,8 +200,10 @@ func (q *Queries) GetTrackItemById(ctx context.Context, id int64) (GetTrackItemB
 	err := row.Scan(
 		&i.TrackID,
 		&i.Title,
+		&i.FullTitle,
 		&i.AlbumID,
 		&i.AlbumName,
+		&i.AlbumFullName,
 		&i.ArtistIds,
 		&i.ArtistNames,
 	)

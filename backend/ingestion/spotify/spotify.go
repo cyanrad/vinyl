@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"main/ingestion/storage"
 	"main/util"
 
@@ -37,13 +36,13 @@ func Connect(ctx context.Context, cache *storage.Cache) (*SpotifyConn, error) {
 		TokenURL:     spotifyauth.TokenURL,
 	}
 
-	log.Println("Getting Spotify token")
+	util.Log.Info("Getting Spotify token")
 	token, err := config.Token(ctx)
 	if err != nil {
 		return nil, errors.New("failed to get spotify token. check if api id & secret are valid")
 	}
 
-	log.Println("Creating Spotify client")
+	util.Log.Info("Creating Spotify client")
 	httpClient := spotifyauth.New().Client(ctx, token)
 	client := spotify.New(httpClient)
 
@@ -55,91 +54,17 @@ func Connect(ctx context.Context, cache *storage.Cache) (*SpotifyConn, error) {
 	return &s, nil
 }
 
-func (s *SpotifyConn) IngestPlaylist(playlistID string) error {
-	data, err := s.GeneratePlaylistData(playlistID)
-	log.Println(err)
-	log.Println(data)
-
-	artists, err := s.GetFullArtists(data.ArtistIDs)
-	log.Println(err)
-	for _, artist := range artists {
-		log.Println(*artist)
-	}
-
-	albums, err := s.GetFullAlbums(data.AlbumIDs)
-	log.Println(err)
-	for _, album := range albums {
-		log.Println(*album)
-	}
-
-	return err
-}
-
-func (s *SpotifyConn) GetTrackIngestion(trackID string) (TrackIngestion, error) {
-	// getting the track data
-	tracks, err := s.GetFullTracks([]spotify.ID{spotify.ID(trackID)})
-	if err != nil {
-		return TrackIngestion{}, err
-	}
-	if len(tracks) > 1 {
-		panic("what??!?")
-	}
-	track := tracks[0]
-
-	// getting artists who worked on the track
-	trackArtists, err := s.generateSimpleArtistIngestion(track.Artists)
-	if err != nil {
-		return TrackIngestion{}, nil
-	}
-
-	// getting albums data
-	var albumIngestion *AlbumIngestion = nil
-	if track.Album.AlbumType != "single" { // if the album is a single we don't count it as an album in our data
-		albums, err := s.GetFullAlbums([]spotify.ID{track.Album.ID})
-		if err != nil {
-			return TrackIngestion{}, err
-		}
-		if len(albums) > 1 {
-			panic("whaaaaaaat??!??!?")
-		}
-		album := albums[0]
-
-		// getting all the artists involved in the album
-		albumArtists, err := s.generateSimpleArtistIngestion(album.Artists)
-		if err != nil {
-			return TrackIngestion{}, nil
-		}
-
-		// generating album ingestion
-		albumIngestion = &AlbumIngestion{
-			Name:     album.Name,
-			ImageURL: album.Images[0].URL,
-			Artists:  albumArtists,
-		}
-	}
-
-	// creating imgestion type
-	return TrackIngestion{
-		Title:     track.Name,
-		Tags:      nil,
-		AlbumRank: int(track.TrackNumber),
-		ImageURL:  track.Album.Images[0].URL, // getting the highest res image
-		Album:     albumIngestion,
-		Artists:   trackArtists,
-	}, nil
-}
-
 // getCached the bool is supposed to indicate if data is usable
 func (s *SpotifyConn) getCached(resource util.ResourceType, source util.IngestionSource, id string, data any) (bool, error) {
 	if data == nil {
 		return false, errors.New("nil cache passed to SpotifyConn.getCached")
 	}
 
-	log.Printf("Checking if resource %s from %s id %s is cached", resource, source, id)
+	util.Log.Infof("Checking if resource %s from %s id %s is cached", resource, source, id)
 	found, err := s.cache.Get(resource, source, id, data)
 	if err != nil {
 		if found {
-			log.Printf("Unexpected error occoured even though object %s was found. Busting cache", id)
+			util.Log.Errorf("Unexpected error occoured even though object %s was found. Busting cache", id)
 			delerr := s.cache.Delete(util.PLAYLISTS, util.SOURCE_SPOTIFY, id)
 			if delerr != nil { // this is too nested...
 				err = fmt.Errorf("%v; %v", err, delerr)
@@ -150,9 +75,9 @@ func (s *SpotifyConn) getCached(resource util.ResourceType, source util.Ingestio
 	}
 
 	if found {
-		log.Println("Cached object found")
+		util.Log.Debugf("Cache found %s %s '%s' ", source, resource, id)
 	} else {
-		log.Println("Cached object was not found")
+		util.Log.Debugf("Cache not found %s %s '%s'", source, resource, id)
 	}
 	return found, nil
 }
@@ -170,4 +95,9 @@ func deduplicate(input []spotify.ID) []spotify.ID {
 	}
 
 	return result
+}
+
+// needed due to conflicting package names
+func StrToID(id string) []spotify.ID {
+	return []spotify.ID{spotify.ID(id)}
 }

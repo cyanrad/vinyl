@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/joho/godotenv"
+	"github.com/op/go-logging"
 )
 
 // global consts
@@ -40,6 +41,13 @@ var (
 	// API Keys
 	SPOTIFY_ID     string
 	SPOTIFY_SECRET string
+
+	// logging
+	// debug - for development purposes and tracking where things are going and how they look
+	// info - the default mode, has tracking of system components, usage, requests, ...
+	// warn - things that are possible to happen like bad requests but nothing that would require the shut down of the system
+	// err - errors that require investigation
+	Log *logging.Logger
 )
 
 func InitConfig() {
@@ -97,4 +105,10 @@ func InitConfig() {
 	// Load Spotify API credentials from environment variables
 	SPOTIFY_ID = os.Getenv("SPOTIFY_ID")
 	SPOTIFY_SECRET = os.Getenv("SPOTIFY_SECRET")
+
+	// initializing logger
+	logging.SetFormatter(logging.MustStringFormatter(
+		`%{color}(%{level:.4s})%{shortfunc:20s} ▶ %{message}%{color:reset}`,
+	))
+	Log = logging.MustGetLogger("main")
 }

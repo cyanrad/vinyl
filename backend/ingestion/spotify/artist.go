@@ -1,17 +1,16 @@
 package spotify
 
 import (
-	"log"
 	"main/ingestion/storage"
 	"main/util"
 
 	"github.com/zmb3/spotify/v2"
 )
 
-// TODO: if this func ends up not using IDs directly just make it take simple artits
 func (s *SpotifyConn) GetFullArtists(artistIDs []spotify.ID) ([]*spotify.FullArtist, error) {
+	util.Log.Debugf("Artists count before deduping: %d", len(artistIDs))
 	artistIDs = deduplicate(artistIDs)
-	log.Printf("Getting %d artists\n", len(artistIDs))
+	util.Log.Infof("Getting %d artists\n", len(artistIDs))
 
 	// retrun array
 	artists := make([]*spotify.FullArtist, 0, len(artistIDs))
@@ -38,7 +37,7 @@ func (s *SpotifyConn) GetFullArtists(artistIDs []spotify.ID) ([]*spotify.FullArt
 
 	// getting all artists from an external API
 	uncachedStartIndex := len(artists)
-	log.Printf("Generating %d Spotify artists data from public API\n", len(nonCachedIDs))
+	util.Log.Infof("Generating %d Spotify artists data from public API\n", len(nonCachedIDs))
 	for offset := 0; offset < len(nonCachedIDs); offset += util.ARTIST_PAGE_SIZE {
 		util.LogProgress(offset, len(nonCachedIDs))
 		end := min(offset+util.ARTIST_PAGE_SIZE, len(nonCachedIDs))
@@ -50,7 +49,7 @@ func (s *SpotifyConn) GetFullArtists(artistIDs []spotify.ID) ([]*spotify.FullArt
 		artists = append(artists, artistsPage...)
 	}
 
-	log.Printf("Spotify artists API complete, Caching %d objects\n", len(nonCachedIDs))
+	util.Log.Infof("Spotify artists API complete, Caching %d objects\n", len(nonCachedIDs))
 	for i, a := range artists[uncachedStartIndex:] {
 		util.LogProgress(i, len(artists)-uncachedStartIndex)
 		err := s.cache.Store(util.ARTISTS, util.SOURCE_SPOTIFY, a.ID.String(), a)
@@ -62,33 +61,43 @@ func (s *SpotifyConn) GetFullArtists(artistIDs []spotify.ID) ([]*spotify.FullArt
 	return artists, nil
 }
 
-func (s *SpotifyConn) generateSimpleArtistIngestion(artists []spotify.SimpleArtist) ([]ArtistIngestion, error) {
+func (s *SpotifyConn) GenerateArtistSpotifyIngestion(artists []*spotify.FullArtist) SpotifyIngestion {
+	return SpotifyIngestion{
+		Artists: GenerateArtistIngestions(artists),
+		Albums:  nil,
+		Tracks:  nil,
+	}
+}
+
+func (s *SpotifyConn) SimpleToFullArtists(artists []spotify.SimpleArtist) ([]*spotify.FullArtist, error) {
 	// getting artist IDs
 	artistIDs := make([]spotify.ID, len(artists))
 	for i, a := range artists {
 		artistIDs[i] = a.ID
 	}
 
-	// getting artists
-	fullArtists, err := s.GetFullArtists(artistIDs)
-	if err != nil {
-		return nil, err
-	}
+	return s.GetFullArtists(artistIDs)
+}
 
+func GenerateArtistIngestions(artists []*spotify.FullArtist) []ArtistIngestion {
 	// creating track artist ingestion
-	ingestions := make([]ArtistIngestion, len(fullArtists))
-	for i, a := range fullArtists {
+	ingestions := make([]ArtistIngestion, len(artists))
+	for i, a := range artists {
 		links := storage.ArtistLinks{}
 		if url, ok := a.ExternalURLs["spotify"]; ok {
 			links.Spotify = &url
 		}
 
+		imageURL := ""
+		if len(a.Images) > 0 {
+			imageURL = a.Images[0].URL
+		}
 		ingestions[i] = ArtistIngestion{
-			Name:     a.Name,
+			Name:     util.GenerateArtistName(a.Name),
 			Links:    links,
-			ImageURL: a.Images[0].URL,
+			ImageURL: imageURL,
 		}
 	}
 
-	return ingestions, nil
+	return ingestions
 }

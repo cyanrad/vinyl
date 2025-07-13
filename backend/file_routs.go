@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"main/db"
 	"main/util"
@@ -14,191 +13,113 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// TODO: this is no a good idea, should be changed to a class
-func serveArtistImage(db *db.Queries) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		// getting artist ID
-		idStr := c.Param("id")
-
-		id, err := strconv.ParseInt(idStr, 10, 64)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusNotFound, "Artist id "+idStr+" is not valid")
-		}
-
-		// getting artist data
-		artist, err := db.GetArtistById(context.Background(), id)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusNotFound, "Artist id "+idStr+" cannot be found")
-		}
-
-		// getting artist image path
-		path, exists := checkIfImageExists(util.ARTISTS, artist.Name)
-		if !exists {
-			return echo.NewHTTPError(http.StatusNotFound, "Image not found")
-		}
-
-		// Log the request
-		log.Printf("Serving artist image: %s to %s", path, c.RealIP())
-
-		// Set appropriate headers
-		c.Response().Header().Set("Cache-Control", "public, max-age=3600")
-
-		// Serve the file
-		return c.File(path)
-	}
+type api struct {
+	db *db.Queries
 }
 
-func serveAlbumImage(db *db.Queries) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		// getting album ID
-		idStr := c.Param("id")
-
-		id, err := strconv.ParseInt(idStr, 10, 64)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusNotFound, "Album id "+idStr+" is not valid")
-		}
-
-		// getting album data
-		album, err := db.GetAlbumById(context.Background(), id)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusNotFound, "Album id "+idStr+" cannot be found")
-		}
-
-		// getting album image path
-		path, exists := checkIfImageExists(util.ALBUMS,
-			util.GenerateAlbumName(album.ArtistNames, album.Name))
-
-		if !exists {
-			return echo.NewHTTPError(http.StatusNotFound, "Album not found")
-		}
-
-		// Log the request
-		log.Printf("Serving album image: %s to %s", path, c.RealIP())
-
-		// Set appropriate headers
-		c.Response().Header().Set("Cache-Control", "public, max-age=3600")
-
-		// Serve the file
-		return c.File(path)
-	}
+func createAPI(db *db.Queries) api {
+	return api{db}
 }
 
-func serveTrackCoverImage(db *db.Queries) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		// getting track ID
-		idStr := c.Param("id")
-
-		id, err := strconv.ParseInt(idStr, 10, 64)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusNotFound, "Track id "+idStr+" is not valid")
-		}
-
-		// getting track item
-		trackItem, err := db.GetTrackItemById(context.Background(), id)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusNotFound, "Track id "+idStr+" cannot be found")
-		}
-
-		// getting track cover file path
-		path, exists := getTrackCoverFilePath(trackItem)
-		if !exists {
-			return echo.NewHTTPError(http.StatusNotFound, "Image not found")
-		}
-
-		// Log the request
-		log.Printf("Serving track cover: %s to %s", path, c.RealIP())
-
-		// Set appropriate headers
-		c.Response().Header().Set("Cache-Control", "public, max-age=3600")
-
-		// Serve the file
-		return c.File(path)
-	}
+type mediaPath struct {
+	name     string
+	resource util.ResourceType
 }
 
-func serveTrackAudio(db *db.Queries) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		// getting track ID
-		idStr := c.Param("id")
-
-		// converting id to int
-		id, err := strconv.ParseInt(idStr, 10, 64)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusNotFound, "Track id "+idStr+" is not valid")
-		}
-
-		// getting track item
-		trackItem, err := db.GetTrackItemById(context.Background(), id)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusNotFound, "Track id "+idStr+" cannot be found")
-		}
-
-		// getting track cover file path
-		artistNames := util.GenerateConcatNames(util.JSONArrToStrArr(trackItem.ArtistNames))
-		path, exists := checkIfAudioExists(util.GenerateTrackName(artistNames, trackItem.AlbumName, trackItem.Title))
-		if !exists {
-			return echo.NewHTTPError(http.StatusNotFound, "Audio not found")
-		}
-
-		// Log the request
-		log.Printf("Serving track audio: %s to %s", path, c.RealIP())
-
-		// Set appropriate headers
-		c.Response().Header().Set("Cache-Control", "public, max-age=3600")
-
-		// Serve the file
-		return c.File(path)
+func (a *api) serveResourceMedia(c echo.Context) error {
+	// getting resource type
+	resource := util.MapStrToResourceType(c.Param("resource"))
+	if resource == util.UNKNOWN {
+		return errorUnknownResource(c.Param("resource"))
 	}
+
+	// getting media type
+	mediaType := util.MapStrToMediaType(c.Param("media"))
+	if mediaType == util.MEDIA_UNKNOWN {
+		return errorUnknownMediaType(c.Param("media"))
+	}
+
+	// audio is limited to tracks
+	if mediaType == util.MEDIA_AUDIO && resource != util.TRACKS {
+		return errorUnavailableMediaType(mediaType, resource)
+	}
+
+	// getting resource ID
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		return errorInvalidRsrouceID(resource, id)
+	}
+
+	log.Printf("INFO: getting media %s %s id '%d'", resource, mediaType, id)
+
+	// Getting the resource name to fetch the file path
+	// TODO: Implement for playlist
+	names := []mediaPath{} // array to handle a unique edge case for track images - could be used for aliasing later
+	switch resource {
+	case util.ARTISTS:
+		var artist db.Artist // need to do this so we don't repeat the error logic
+		artist, err = a.db.GetArtistById(context.Background(), id)
+		names = append(names, mediaPath{artist.Name, util.ARTISTS})
+	case util.ALBUMS:
+		var album db.GetAlbumByIdRow
+		album, err = a.db.GetAlbumById(context.Background(), id)
+		names = append(names, mediaPath{album.FullName, util.ALBUMS})
+	case util.TRACKS:
+		var track db.GetTrackItemByIdRow
+		track, err = a.db.GetTrackItemById(context.Background(), id)
+		names = getTrackNames(track)
+	default:
+		return errorUnknownResource(c.Param("resource"))
+	}
+	if err != nil {
+		return errorResourceNotFound(resource, id)
+	}
+
+	log.Printf("INFO: got resource '%s'", names[0].name)
+
+	// getting the media file path
+	path := ""
+	exists := false
+	switch mediaType {
+	case util.MEDIA_IMAGE:
+		path, exists = getImagePath(names)
+	case util.MEDIA_AUDIO:
+		path, exists = getAudioPath(names[0])
+	}
+	if !exists {
+		return errorMediaNotFound(mediaType, names[0])
+	}
+
+	log.Printf("INFO: sending file at '%s'", path)
+
+	// Set appropriate headers
+	c.Response().Header().Set("Cache-Control", "public, max-age=3600")
+
+	// Serve the file
+	return c.File(path)
 }
 
-func getTrackCoverFilePath(trackItem db.GetTrackItemByIdRow) (string, bool) {
-	artistName := util.GenerateConcatNames(util.JSONArrToStrArr(trackItem.ArtistNames))
+func getImagePath(paths []mediaPath) (string, bool) {
+	for _, path := range paths {
+		for _, extention := range []string{".png", ".jpg"} {
+			// Construct file path
+			filePath := filepath.Join(util.MEDIA_PATH, string(path.resource), path.name+extention)
 
-	// we attempt to find a cover for the track first, then ablum cover then artist image
-	// track cover
-	if path, exists := checkIfImageExists(util.TRACKS,
-		util.GenerateTrackName(artistName, trackItem.AlbumName, trackItem.Title)); exists {
-		return path, true
-	}
+			// Check if file exists
+			_, err := os.Stat(filePath)
+			if err != nil {
+				continue
+			}
 
-	// album cover
-	if trackItem.AlbumName != nil {
-		if path, exists := checkIfImageExists(util.ALBUMS,
-			util.GenerateAlbumName(artistName, *trackItem.AlbumName)); exists {
-			return path, true
+			return filePath, true
 		}
 	}
-
-	// artist Image
-	if path, exists := checkIfImageExists(util.ARTISTS, artistName); exists {
-		return path, true
-	}
-
 	return "", false
 }
 
-func checkIfImageExists(resourceType util.ResourceType, resourceName string) (string, bool) {
-	for _, extention := range []string{".png", ".jpg"} {
-		// Construct file path
-		filePath := filepath.Join(util.MEDIA_PATH, string(resourceType), resourceName+extention)
-		fmt.Println(filePath)
-
-		// Check if file exists
-		_, err := os.Stat(filePath)
-		if err != nil {
-			continue
-		}
-
-		return filePath, true
-	}
-
-	return "", false
-}
-
-func checkIfAudioExists(resourceName string) (string, bool) {
+func getAudioPath(path mediaPath) (string, bool) {
 	// Construct file path
-	filePath := filepath.Join(util.MEDIA_PATH, string(util.AUDIO), resourceName+".mp3")
-	fmt.Println(filePath)
+	filePath := filepath.Join(util.MEDIA_PATH, string(util.AUDIO), path.name+".mp3")
 
 	// Check if file exists
 	_, err := os.Stat(filePath)
@@ -207,4 +128,41 @@ func checkIfAudioExists(resourceName string) (string, bool) {
 	}
 
 	return filePath, true
+}
+
+func getTrackNames(track db.GetTrackItemByIdRow) []mediaPath {
+	// I know it's not the best way to handle this but fuck it
+	// it is important that this is ordered like track -> album -> artist as it sets fetch priority
+	names := []mediaPath{{track.FullTitle, util.TRACKS}}
+	if track.AlbumFullName != nil {
+		names = append(names, mediaPath{*track.AlbumFullName, util.ALBUMS})
+	}
+	for _, artist := range util.JSONArrToStrArr(track.ArtistNames) {
+		names = append(names, mediaPath{artist, util.ARTISTS})
+	}
+	return names
+}
+
+func errorInvalidRsrouceID(resource util.ResourceType, id int64) *echo.HTTPError {
+	return echo.NewHTTPError(http.StatusNotFound, string(resource)+" id '"+string(id)+"' is not valid")
+}
+
+func errorResourceNotFound(resource util.ResourceType, id int64) *echo.HTTPError {
+	return echo.NewHTTPError(http.StatusNotFound, string(resource)+" id '"+string(id)+"' cannot be found")
+}
+
+func errorUnknownResource(resource string) *echo.HTTPError {
+	return echo.NewHTTPError(http.StatusNotFound, "Unknown resource given '"+string(resource)+"'")
+}
+
+func errorUnknownMediaType(mediaType string) *echo.HTTPError {
+	return echo.NewHTTPError(http.StatusNotFound, "Unknown media type given '"+string(mediaType)+"'")
+}
+
+func errorUnavailableMediaType(mediaType util.MediaType, resource util.ResourceType) *echo.HTTPError {
+	return echo.NewHTTPError(http.StatusNotFound, "Unavailable media type '"+string(mediaType)+"' for '"+string(resource)+"'")
+}
+
+func errorMediaNotFound(mediaType util.MediaType, path mediaPath) *echo.HTTPError {
+	return echo.NewHTTPError(http.StatusNotFound, "Media "+string(mediaType)+" not found for "+string(path.resource)+" '"+path.name+"'")
 }

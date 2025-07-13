@@ -22,10 +22,10 @@ func main() {
 	// Loading environment configs like port and file paths
 	util.InitConfig()
 
-	fmt.Println("Connecting to database...")
+	util.Log.Info("Connecting to database...")
 	database := initDatabase()
 	defer database.Conn.Close()
-	fmt.Println("Connected to database")
+	util.Log.Info("Connected to database")
 
 	ctx := context.Background()
 	if util.INGEST {
@@ -58,11 +58,14 @@ func runIngestion(ctx context.Context, queries *db.Queries) {
 
 	switch util.SOURCE {
 	case util.SOURCE_LOCAL:
-		log.Println("Ingesting local data")
+		util.Log.Debug("Ingesting local data")
 		engine.IngestAndCreateData()
 	case util.SOURCE_SPOTIFY:
-		log.Println("Ingesting Spotify data")
-		engine.IngestSpotify(util.RESOURCE, util.RESOURCE_ID)
+		util.Log.Debug("Ingesting Spotify data")
+		err := engine.IngestSpotify(util.RESOURCE, util.RESOURCE_ID)
+		if err != nil {
+			util.Log.Errorf("Ingestion failed with: %s", err)
+		}
 	default:
 		panic("what the actual fuck")
 	}
@@ -70,6 +73,7 @@ func runIngestion(ctx context.Context, queries *db.Queries) {
 
 func runServer(ctx context.Context, queries *db.Queries) {
 	e := echo.New()
+	a := createAPI(queries)
 
 	// TODO: this should be updated with the server's domain at some point
 	e.Use(middleware.CORS())
@@ -88,15 +92,8 @@ func runServer(ctx context.Context, queries *db.Queries) {
 		return c.JSON(http.StatusOK, trackItems)
 	})
 
-	// serving the audio
-	// TODO: there should be another WS path to stream the audio
-	e.GET("/tracks/:id/audio", serveTrackAudio(queries))
-
-	// serving resource images
-	// TODO: serving lower res images can be useful to lower data usage & improve load times
-	e.GET("/tracks/:id/image", serveTrackCoverImage(queries))
-	e.GET("/albums/:id/image", serveAlbumImage(queries))
-	e.GET("/artists/:id/image", serveArtistImage(queries))
+	// serving media (image, audio)
+	e.GET("/:resource/:id/:media", a.serveResourceMedia)
 
 	// starting server with logging
 	fmt.Println("Starting Vinyl :)")

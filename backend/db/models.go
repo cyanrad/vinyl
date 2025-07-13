@@ -11,6 +11,7 @@ import (
 type Album struct {
 	ID          int64     `json:"id"`
 	Name        string    `json:"name"`
+	FullName    string    `json:"fullName"`
 	Description *string   `json:"description"`
 	CreatedAt   time.Time `json:"createdAt"`
 }
@@ -26,6 +27,7 @@ type Artist struct {
 type ArtistsAlbum struct {
 	ArtistID int64 `json:"artistId"`
 	AlbumID  int64 `json:"albumId"`
+	Rank     int64 `json:"rank"`
 }
 
 type Playlist struct {
@@ -38,6 +40,7 @@ type Playlist struct {
 type Track struct {
 	ID          int64     `json:"id"`
 	Title       string    `json:"title"`
+	FullTitle   string    `json:"fullTitle"`
 	Description *string   `json:"description"`
 	Tags        *string   `json:"tags"`
 	CreatedAt   time.Time `json:"createdAt"`

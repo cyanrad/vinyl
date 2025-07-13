@@ -49,3 +49,23 @@ func MapStrToIngestionSource(str string) IngestionSource {
 		return SOURCE_UNKNOWN
 	}
 }
+
+type MediaType string
+
+const (
+	MEDIA_IMAGE   MediaType = "image"
+	MEDIA_AUDIO   MediaType = "audio"
+	MEDIA_UNKNOWN MediaType = "unknown"
+)
+
+func MapStrToMediaType(str string) MediaType {
+	str = strings.ToLower(str)
+	switch str {
+	case "image":
+		return MEDIA_IMAGE
+	case "track":
+		return MEDIA_AUDIO
+	default:
+		return MEDIA_UNKNOWN
+	}
+}

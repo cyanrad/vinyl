@@ -2,10 +2,10 @@ package ingestion
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"main/db"
 	"main/ingestion/storage"
-	"main/util"
 	"strings"
 )
 
@@ -13,13 +13,8 @@ import (
 func (e *Engine) CreateTracks(tracks []storage.TrackIngestion) error {
 	for _, track := range tracks {
 		// checking if track already exists
-		albumName := track.Album
-		if albumName != nil {
-			albumName = &strings.Split(*track.Album, " - ")[1] // extracing the album name part
-		}
-		trackName := util.GenerateTrackName(util.GenerateConcatNames(track.Artists), albumName, track.Title)
-		log.Printf("Checking if track %s exists", trackName)
-		_, err := e.queries.GetTrackByName(e.ctx, trackName)
+		log.Printf("Checking if track %s exists", track.FullTitle)
+		_, err := e.queries.GetTrackByName(e.ctx, track.FullTitle)
 		if err == nil {
 			log.Println("Track already exists. Skipping db insert")
 			continue
@@ -45,6 +40,7 @@ func (e *Engine) CreateTracks(tracks []storage.TrackIngestion) error {
 		if track.Album != nil && track.AlbumRank != nil {
 			id, err := e.queries.GetAlbumByName(e.ctx, *track.Album)
 			if err != nil {
+				fmt.Println("test", *track.Album)
 				return err
 			}
 
@@ -61,6 +57,7 @@ func (e *Engine) CreateTracks(tracks []storage.TrackIngestion) error {
 		// creating the track
 		trackRow, err := e.queries.CreateTrack(e.ctx, db.CreateTrackParams{
 			Title:       track.Title,
+			FullTitle:   track.FullTitle,
 			Description: track.Description,
 			Tags:        tags,
 		})
@@ -98,9 +95,9 @@ func (e *Engine) CreateTracks(tracks []storage.TrackIngestion) error {
 
 func (e *Engine) CreateAlbums(albums []storage.AlbumIngestion) error {
 	for _, album := range albums {
-		albumName := util.GenerateAlbumName(util.GenerateConcatNames(album.Artists), album.Name)
-		log.Printf("Checking if album %s exists", albumName)
-		_, err := e.queries.GetAlbumByName(e.ctx, albumName)
+		log.Printf("Checking if album %s exists", album.FullName)
+		_, err := e.queries.GetAlbumByName(e.ctx, album.FullName)
+
 		if err == nil {
 			log.Println("Album already exists. Skipping db insert")
 			continue
@@ -122,16 +119,18 @@ func (e *Engine) CreateAlbums(albums []storage.AlbumIngestion) error {
 
 		albumRow, err := e.queries.CreateAlbum(e.ctx, db.CreateAlbumParams{
 			Name:        album.Name,
+			FullName:    album.FullName,
 			Description: album.Description,
 		})
 		if err != nil {
 			return err
 		}
 
-		for _, artistID := range artistIDs {
+		for i, artistID := range artistIDs {
 			err = e.queries.CreateArtistAlbum(e.ctx, db.CreateArtistAlbumParams{
 				AlbumID:  albumRow.ID,
 				ArtistID: artistID,
+				Rank:     int64(i + 1),
 			})
 			if err != nil {
 				return err

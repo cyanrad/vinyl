@@ -10,20 +10,22 @@ import (
 )
 
 const createAlbum = `-- name: CreateAlbum :one
-INSERT INTO albums (name, description) VALUES (?, ?) RETURNING id, name, description, created_at
+INSERT INTO albums (name, full_name, description) VALUES (?, ?, ?) RETURNING id, name, full_name, description, created_at
 `
 
 type CreateAlbumParams struct {
 	Name        string  `json:"name"`
+	FullName    string  `json:"fullName"`
 	Description *string `json:"description"`
 }
 
 func (q *Queries) CreateAlbum(ctx context.Context, arg CreateAlbumParams) (Album, error) {
-	row := q.db.QueryRowContext(ctx, createAlbum, arg.Name, arg.Description)
+	row := q.db.QueryRowContext(ctx, createAlbum, arg.Name, arg.FullName, arg.Description)
 	var i Album
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
+		&i.FullName,
 		&i.Description,
 		&i.CreatedAt,
 	)
@@ -46,16 +48,17 @@ func (q *Queries) CreateArtist(ctx context.Context, arg CreateArtistParams) erro
 }
 
 const createArtistAlbum = `-- name: CreateArtistAlbum :exec
-INSERT INTO artists_albums (artist_id, album_id) VALUES (?, ?)
+INSERT INTO artists_albums (artist_id, album_id, rank) VALUES (?, ?, ?)
 `
 
 type CreateArtistAlbumParams struct {
 	ArtistID int64 `json:"artistId"`
 	AlbumID  int64 `json:"albumId"`
+	Rank     int64 `json:"rank"`
 }
 
 func (q *Queries) CreateArtistAlbum(ctx context.Context, arg CreateArtistAlbumParams) error {
-	_, err := q.db.ExecContext(ctx, createArtistAlbum, arg.ArtistID, arg.AlbumID)
+	_, err := q.db.ExecContext(ctx, createArtistAlbum, arg.ArtistID, arg.AlbumID, arg.Rank)
 	return err
 }
 
@@ -74,21 +77,28 @@ func (q *Queries) CreatePlaylist(ctx context.Context, arg CreatePlaylistParams) 
 }
 
 const createTrack = `-- name: CreateTrack :one
-INSERT INTO tracks (title, description, tags) VALUES (?, ?, ?) RETURNING id, title, description, tags, created_at
+INSERT INTO tracks (title, full_title, description, tags) VALUES (?, ?, ?, ?) RETURNING id, title, full_title, description, tags, created_at
 `
 
 type CreateTrackParams struct {
 	Title       string  `json:"title"`
+	FullTitle   string  `json:"fullTitle"`
 	Description *string `json:"description"`
 	Tags        *string `json:"tags"`
 }
 
 func (q *Queries) CreateTrack(ctx context.Context, arg CreateTrackParams) (Track, error) {
-	row := q.db.QueryRowContext(ctx, createTrack, arg.Title, arg.Description, arg.Tags)
+	row := q.db.QueryRowContext(ctx, createTrack,
+		arg.Title,
+		arg.FullTitle,
+		arg.Description,
+		arg.Tags,
+	)
 	var i Track
 	err := row.Scan(
 		&i.ID,
 		&i.Title,
+		&i.FullTitle,
 		&i.Description,
 		&i.Tags,
 		&i.CreatedAt,

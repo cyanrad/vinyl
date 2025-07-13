@@ -1,6 +1,7 @@
 CREATE TABLE tracks (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title VARCHAR(255) NOT NULL,
+    full_title VARCHAR(255) NOT NULL,
     description TEXT,
     tags TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
@@ -17,6 +18,7 @@ CREATE TABLE artists (
 CREATE TABLE albums (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name VARCHAR(255) NOT NULL,
+    full_name VARCHAR(225) NOT NULL,
     description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
@@ -49,6 +51,7 @@ CREATE TABLE tracks_albums (
 CREATE TABLE artists_albums (
     artist_id INTEGER NOT NULL,
     album_id INTEGER NOT NULL,
+    rank INTEGER NOT NULL,
     PRIMARY KEY (artist_id, album_id),
     FOREIGN KEY (artist_id) REFERENCES artists(id),
     FOREIGN KEY (album_id) REFERENCES albums(id)
