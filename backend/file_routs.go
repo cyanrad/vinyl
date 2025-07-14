@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"log"
 	"main/db"
 	"main/util"
 	"net/http"
@@ -50,7 +49,7 @@ func (a *api) serveResourceMedia(c echo.Context) error {
 		return errorInvalidRsrouceID(resource, id)
 	}
 
-	log.Printf("INFO: getting media %s %s id '%d'", resource, mediaType, id)
+	util.Log.Infof("getting media %s %s id '%d'", resource, mediaType, id)
 
 	// Getting the resource name to fetch the file path
 	// TODO: Implement for playlist
@@ -75,7 +74,7 @@ func (a *api) serveResourceMedia(c echo.Context) error {
 		return errorResourceNotFound(resource, id)
 	}
 
-	log.Printf("INFO: got resource '%s'", names[0].name)
+	util.Log.Infof("got resource '%s'", names[0].name)
 
 	// getting the media file path
 	path := ""
@@ -87,10 +86,11 @@ func (a *api) serveResourceMedia(c echo.Context) error {
 		path, exists = getAudioPath(names[0])
 	}
 	if !exists {
+		util.Log.Warning("Failed to fetch %s '%s'", mediaType, names[0])
 		return errorMediaNotFound(mediaType, names[0])
 	}
 
-	log.Printf("INFO: sending file at '%s'", path)
+	util.Log.Infof("sending file at '%s'", path)
 
 	// Set appropriate headers
 	c.Response().Header().Set("Cache-Control", "public, max-age=3600")

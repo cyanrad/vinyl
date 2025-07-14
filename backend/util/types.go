@@ -63,7 +63,7 @@ func MapStrToMediaType(str string) MediaType {
 	switch str {
 	case "image":
 		return MEDIA_IMAGE
-	case "track":
+	case "audio":
 		return MEDIA_AUDIO
 	default:
 		return MEDIA_UNKNOWN

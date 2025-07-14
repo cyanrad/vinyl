@@ -36,5 +36,5 @@ export function generateTrackItemCoverUrl(item: TrackItem): string {
 }
 
 export function generateTrackItemAudioUrl(item: TrackItem): string {
-    return `${API_URL}/tracks/${item.trackId}/audio`;
+    return `${API_URL}/${TRACKS_RESOURCE}/${item.trackId}/audio`;
 }
